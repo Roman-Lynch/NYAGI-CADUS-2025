@@ -117,8 +117,6 @@ class MainActivity : ComponentActivity() {
                             viewModel.setDelegate(it)
                         }, onThresholdSet = {
                             viewModel.setThreshold(it)
-                        }, onMaxResultSet = {
-                            viewModel.setNumberOfResult(it)
                         })
                     },
                     floatingActionButton = {
@@ -134,7 +132,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }) {
                     Column {
-                        Header()
                         Content(uiState = uiState,
                             tab = tabState,
                             uri = mediaUriState.toString(),
@@ -216,8 +213,7 @@ class MainActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         onModelSelected: (ImageClassificationHelper.Model) -> Unit,
         onDelegateSelected: (ImageClassificationHelper.Delegate) -> Unit,
-        onThresholdSet: (value: Float) -> Unit,
-        onMaxResultSet: (value: Int) -> Unit,
+        onThresholdSet: (value: Float) -> Unit
     ) {
         val categories = uiState.categories
         val inferenceTime = uiState.inferenceTime
@@ -278,30 +274,14 @@ class MainActivity : ComponentActivity() {
                 value = uiState.setting.threshold,
                 onMinusClicked = {
                     if (threshold > 0.3f) {
-                        val newThreshold = (threshold - 0.1f).coerceAtLeast(0.3f)
+                        val newThreshold = (threshold - 0.1f).coerceAtLeast(0.0f)
                         onThresholdSet(newThreshold)
                     }
                 },
                 onPlusClicked = {
                     if (threshold < 0.8f) {
-                        val newThreshold = threshold + 0.1f.coerceAtMost(0.8f)
+                        val newThreshold = threshold + 0.1f.coerceAtMost(0.0f)
                         onThresholdSet(newThreshold)
-                    }
-                },
-            )
-
-            AdjustItem(
-                name = stringResource(id = R.string.maxResult), value = resultCount,
-                onMinusClicked = {
-                    if (resultCount >= 2) {
-                        val count = resultCount - 1
-                        onMaxResultSet(count)
-                    }
-                },
-                onPlusClicked = {
-                    if (resultCount < 5) {
-                        val count = resultCount + 1
-                        onMaxResultSet(count)
                     }
                 },
             )
