@@ -64,12 +64,40 @@ class ImageClassificationHelper(
     companion object {
         private const val TAG = "ImageClassification"
 
-        val DEFAULT_MODEL = Model.EfficientNetLite0
+        val DEFAULT_MODEL = Model.EfficientNet
         val DEFAULT_DELEGATE = Delegate.CPU
-        const val DEFAULT_RESULT_COUNT = 3
-        const val DEFAULT_THRESHOLD = 0.3f
+        const val DEFAULT_RESULT_COUNT = 1
+
+        /* SHOULD PROBABLY BE >0.8 */
+        const val DEFAULT_THRESHOLD = 0.0f
         const val DEFAULT_THREAD_COUNT = 2
 
+    }
+
+    /* ONLY ADDED TO GET MODEL WORKING. THIS SHOULD BE INCLUDED in training from now on"*/
+    fun softmax(scores: FloatArray): FloatArray {
+        val maxScore = scores.maxOrNull() ?: 0f  // Prevents large negative exponentiation
+        val expScores = scores.map { Math.exp((it - maxScore).toDouble()) }.toDoubleArray()
+        val sumExpScores = expScores.sum()
+        return expScores.map { (it / sumExpScores).toFloat() }.toFloatArray()
+    }
+
+    /* Used to load labels if the labels aren't properly loaded by labels = getModelMetadata(litertBuffer)*/
+    fun loadLabels(context: Context): List<String> {
+        val labels = mutableListOf<String>()
+        try {
+            // Open the labels file from the assets folder
+            val inputStream: InputStream = context.assets.open("labels.txt")
+            val reader = BufferedReader(InputStreamReader(inputStream))
+
+            // Read each line and add to the list
+            reader.useLines { lines ->
+                lines.forEach { labels.add(it) }
+            }
+        } catch (e: Exception) {
+            Log.e("ImageClassification", "Error loading labels", e)
+        }
+        return labels
     }
 
     /** As the result of sound classification, this value emits map of probabilities */
@@ -95,7 +123,11 @@ class ImageClassificationHelper(
                 numThreads = options.threadCount
                 useNNAPI = options.delegate == Delegate.NNAPI
             }
-            labels = getModelMetadata(litertBuffer)
+            labels = loadLabels(context)
+
+            /* THIS CURRENTLY DOESN'T WORK*/
+            /*labels = getModelMetadata(litertBuffer)*/
+
             Interpreter(litertBuffer, options)
         } catch (e: Exception) {
             Log.i(TAG, "Create TFLite from ${options.model.fileName} is failed ${e.message}")
@@ -125,7 +157,6 @@ class ImageClassificationHelper(
                 val output = classifyWithTFLite(tensorImage)
 
                 val outputList = output.map {
-                    /** Scores in range 0..1.0 for each of the output classes. */
                     if (it < options.probabilityThreshold) 0f else it
                 }
 
@@ -134,28 +165,41 @@ class ImageClassificationHelper(
                 }.sortedByDescending { it.score }.take(options.resultCount)
 
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
+
+                // Log classification results
+                if (categories.isNotEmpty()) {
+                    Log.i(TAG, "Classification complete. Top label: ${categories[0].label}, Score: ${categories[0].score}")
+                } else {
+                    Log.w(TAG, "Category empty")
+                }
+
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))
                 }
             }
         } catch (e: Exception) {
-            Log.i(TAG, "Image classification error occurred: ${e.message}")
+            Log.e(TAG, "Image classification error occurred: ${e.message}", e)
             _error.emit(e)
         }
     }
 
     private fun classifyWithTFLite(tensorImage: TensorImage): FloatArray {
         val outputShape = interpreter!!.getOutputTensor(0).shape()
-        val outputBuffer = FloatBuffer.allocate(outputShape[1])
+        val outputBuffer = FloatBuffer.allocate(outputShape.reduce { acc, i -> acc * i })
 
         outputBuffer.rewind()
         interpreter?.run(tensorImage.tensorBuffer.buffer, outputBuffer)
         outputBuffer.rewind()
         val output = FloatArray(outputBuffer.capacity())
         outputBuffer.get(output)
-        return output
-    }
+        Log.i(TAG, "Raw output scores: ${softmax(output).joinToString()}")
+        Log.i(TAG, "Model input shape: ${interpreter?.getInputTensor(0)?.shape()?.joinToString()}")
+        Log.i(TAG, "Model output shape: ${interpreter?.getOutputTensor(0)?.shape()?.joinToString()}")
+        Log.i(TAG, "Loaded labels: ${labels.joinToString()}")
 
+        /* HAD TO USE SOFTMAX HERE. SHOULD WORK without softmax in future*/
+        return softmax(output)
+    }
 
     /** Load metadata from model*/
     private fun getModelMetadata(litertBuffer: ByteBuffer): List<String> {
@@ -187,13 +231,12 @@ class ImageClassificationHelper(
         return list
     }
 
-
     enum class Delegate {
         CPU, NNAPI
     }
 
     enum class Model(val fileName: String) {
-        EfficientNetLite0("efficientnet_lite0.tflite"), EfficientNetLite2("efficientnet_lite2.tflite")
+        EfficientNet("model.tflite"), ResNet("resnet_model.tflite")
     }
 
     data class ClassificationResult(
