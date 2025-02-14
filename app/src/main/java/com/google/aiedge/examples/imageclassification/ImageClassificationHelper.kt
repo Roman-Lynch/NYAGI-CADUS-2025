@@ -236,7 +236,7 @@ class ImageClassificationHelper(
     }
 
     enum class Model(val fileName: String) {
-        EfficientNet("model.tflite"), ResNet("model.tflite")
+        EfficientNet("model.tflite"), ResNet("resnet_model.tflite")
     }
 
     data class ClassificationResult(
