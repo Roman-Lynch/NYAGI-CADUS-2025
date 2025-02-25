@@ -9,9 +9,9 @@ fun ApplicationTheme(
 ) {
     MaterialTheme(
         colors = MaterialTheme.colors.copy(
-            primary = darkBlue,
-            secondary = teal,
-            onSurface = teal,
+            primary = Theme.DarkBlue,
+            secondary = Theme.Teal,
+            onSurface = Theme.Teal,
         ),
         content = content
     )
