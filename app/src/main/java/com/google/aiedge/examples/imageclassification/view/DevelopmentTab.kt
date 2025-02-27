@@ -1,7 +1,6 @@
 package com.google.aiedge.examples.imageclassification.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -154,9 +153,6 @@ enum class Pages {
 @Composable
 fun DevelopmentScreen() {
     val currentPage by remember { mutableStateOf(Pages.BodyRegions) }
-
-    // use this to pass any standard styling to subsequent pages
-    val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
 
     HeaderBar()
 
