@@ -10,8 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -23,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
+import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 
@@ -92,7 +91,6 @@ fun HeaderBar() {
             .height(80.dp)
             .padding(10.dp)
             .onGloballyPositioned { coordinates ->
-                // Store the height of the Box
                 textHeight = coordinates.size.height
             },
     ) {
@@ -107,8 +105,7 @@ fun HeaderBar() {
                     fontSize = (textHeight / density).sp,
                     fontWeight = FontWeight.Bold,
                     fontStyle = FontStyle.Italic,
-
-                    ),
+                ),
             )
             Spacer(modifier = Modifier.weight(1f))
             HeaderBarButton()
@@ -166,7 +163,7 @@ fun DevelopmentScreen() {
     when (currentPage) {
         Pages.BodyRegions -> {
             TextHeader("Body Part Selector")
-            BodyRegionsPage(standardModifier)
+            BodyRegionsPage()
         }
         Pages.ScanType -> {
 
@@ -175,7 +172,7 @@ fun DevelopmentScreen() {
 
         }
         Pages.Settings -> {
-
+            SettingsPage()
         }
     }
 }
