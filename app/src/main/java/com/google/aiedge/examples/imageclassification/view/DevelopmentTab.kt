@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
+import com.google.aiedge.examples.imageclassification.toAndroidPath
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -116,7 +117,7 @@ fun HeaderBar() {
 @Composable
 fun TextHeader(name:String){
     Column(modifier = Modifier
-        .padding(horizontal = horizontalPadding)
+        .padding(horizontal = Theme.StandardPageMargin)
     ){
         Row(modifier = Modifier
             .fillMaxWidth(),
@@ -129,18 +130,14 @@ fun TextHeader(name:String){
                 fontWeight = FontWeight.Bold
             )
             AsyncImage(
-                model = "file:///android_asset/Icons/Help.png",
+                model = toAndroidPath("Icons/Help.png"),
                 contentDescription = null,
                 modifier = Modifier
                     .size(50.dp)
             )
 
         }
-        // purple divider
-        Spacer(modifier = Modifier
-            .height(3.dp)
-            .fillMaxSize()
-            .background(Theme.NyagiPurple))
+        ContentSpacer()
         // bottom whitespace
         Spacer(modifier=Modifier.height(15.dp))
     }

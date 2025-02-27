@@ -1,6 +1,7 @@
 package com.google.aiedge.examples.imageclassification.view
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 data object Theme {
     val DarkBlue = Color(0xFF020f59)
@@ -14,4 +15,6 @@ data object Theme {
     val Black = Color(0xFF1D1B20)
     val Grey = Color(0xFFDADFDD)
     val NyagiGreen = Color(0xFFBBCBC7)
+
+    val StandardPageMargin = 25.dp
 }
