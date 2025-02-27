@@ -23,6 +23,7 @@ import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
+private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
 
 @Composable
 fun DefaultAlert(onClick: () -> Unit) {
@@ -159,7 +160,7 @@ fun DevelopmentScreen() {
     when (currentPage) {
         Pages.BodyRegions -> {
             TextHeader("Body Part Selector")
-            BodyRegionsPage()
+            BodyRegionsPage(standardModifier)
         }
         Pages.ScanType -> {
 
