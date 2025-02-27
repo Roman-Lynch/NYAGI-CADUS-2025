@@ -21,16 +21,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.toAndroidPath
+import com.google.aiedge.examples.imageclassification.view.ContentDivider
+import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
 
 enum class Language(val nativeName: String, val flagPath: String) {
     English("English", "Flags/UKFlag.png"),
 }
 
-
+@Preview
 @Composable
 fun SettingsPage() {
 
+    Column(
+        modifier = Modifier
+            .padding(Theme.StandardPageMargin)
+    ) {
+        TextHeader("Settings")
+        Row() {
+            AsyncImage(
+                model = toAndroidPath("Icons/LanguageIcon.png"),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.CenterVertically),
+                contentScale = ContentScale.Fit
+            )
+            Text("Language",
+                modifier= Modifier
+                    .padding(vertical=25.dp)
+                    .align(Alignment.CenterVertically),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        ContentDivider()
+    }
 }
 
 @Preview

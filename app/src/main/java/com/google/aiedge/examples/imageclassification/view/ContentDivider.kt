@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ContentSpacer() {
+fun ContentDivider() {
     Spacer(modifier = Modifier
         .height(3.dp)
         .fillMaxSize()

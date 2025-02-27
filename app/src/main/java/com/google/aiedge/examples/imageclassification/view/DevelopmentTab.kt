@@ -114,35 +114,6 @@ fun HeaderBar() {
     }
 }
 
-@Composable
-fun TextHeader(name:String){
-    Column(modifier = Modifier
-        .padding(horizontal = Theme.StandardPageMargin)
-    ){
-        Row(modifier = Modifier
-            .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(name,
-                modifier=Modifier.padding(vertical=25.dp),
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-            AsyncImage(
-                model = toAndroidPath("Icons/Help.png"),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(50.dp)
-            )
-
-        }
-        ContentSpacer()
-        // bottom whitespace
-        Spacer(modifier=Modifier.height(15.dp))
-    }
-}
-
 enum class Pages {
     BodyRegions, ScanType, Scan, Settings
 }
