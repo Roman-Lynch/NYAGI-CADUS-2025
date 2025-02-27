@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -146,7 +144,12 @@ fun TextHeader(name:String){
             )
 
         }
-        HorizontalDivider(thickness=3.dp, color=Theme.NyagiPurple)
+        // purple divider
+        Spacer(modifier = Modifier
+            .height(3.dp)
+            .fillMaxSize()
+            .background(Theme.NyagiPurple))
+        // bottom whitespace
         Spacer(modifier=Modifier.height(15.dp))
     }
 }
