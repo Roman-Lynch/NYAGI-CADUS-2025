@@ -13,4 +13,5 @@ data object Theme {
     val NyagiDarkPurple = Color(0xFF1C0120)
     val Black = Color(0xFF1D1B20)
     val Grey = Color(0xFFDADFDD)
+    val NyagiGreen = Color(0xFFBBCBC7)
 }

@@ -53,7 +53,7 @@ fun DefaultAlert(onClick: () -> Unit) {
 
 @Preview
 @Composable
-fun HeaderBarButton(modifier: Modifier = Modifier, filePath: String = "Icons/GearIconWhite.png") {
+fun HeaderBarButton(modifier: Modifier = Modifier, filePath: String = "Icons/GearIcon.png") {
 
     var showAlert by remember { mutableStateOf(false) }
 
@@ -63,16 +63,11 @@ fun HeaderBarButton(modifier: Modifier = Modifier, filePath: String = "Icons/Gea
             .aspectRatio(1.0f)
             .clip(CircleShape)
             .clickable(onClick = { showAlert = true })
-            .background(Brush.linearGradient(
-                colors = listOf(Theme.NyagiPurple, Theme.NyagiDarkPurple)
-            ))
-            .border(2.dp, Theme.Black, CircleShape)
     ) {
         AsyncImage(
             model = "file:///android_asset/${filePath}",
             contentDescription = null,
             modifier = Modifier
-                .padding(14.dp)
                 .fillMaxSize()
         )
     }
@@ -92,7 +87,7 @@ fun HeaderBar() {
 
     Box(
         modifier = Modifier
-            .background(Theme.NyagiTeal)
+            .background(Theme.NyagiGreen)
             .fillMaxWidth()
             .height(80.dp)
             .padding(10.dp)
@@ -103,7 +98,7 @@ fun HeaderBar() {
     ) {
 
         Row() {
-            HeaderBarButton(filePath = "Icons/BackIconWhite.png")
+            HeaderBarButton(filePath = "Icons/BackIcon.png")
             Spacer(Modifier.width(5.dp))
             Text(
                 text = "NYAGI",
