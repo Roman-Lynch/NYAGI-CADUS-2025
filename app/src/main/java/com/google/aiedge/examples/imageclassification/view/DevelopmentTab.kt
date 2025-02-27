@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
-import com.google.aiedge.examples.imageclassification.toAndroidPath
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -53,16 +53,18 @@ fun DefaultAlert(onClick: () -> Unit) {
 
 @Preview
 @Composable
-fun HeaderBarButton(modifier: Modifier = Modifier, filePath: String = "Icons/GearIcon.png") {
-
-    var showAlert by remember { mutableStateOf(false) }
+fun HeaderBarButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    filePath: String = "Icons/GearIcon.png"
+) {
 
     Box(
         modifier = modifier
             .fillMaxHeight()
             .aspectRatio(1.0f)
             .clip(CircleShape)
-            .clickable(onClick = { showAlert = true })
+            .clickable(onClick = onClick)
     ) {
         AsyncImage(
             model = "file:///android_asset/${filePath}",
@@ -72,15 +74,11 @@ fun HeaderBarButton(modifier: Modifier = Modifier, filePath: String = "Icons/Gea
         )
     }
 
-    if (showAlert) {
-        DefaultAlert({ showAlert = false })
-    }
-
 }
 
 @Preview
 @Composable
-fun HeaderBar() {
+fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
 
     var textHeight by remember { mutableStateOf(0) }
     val density = LocalDensity.current.density
@@ -109,7 +107,7 @@ fun HeaderBar() {
                 ),
             )
             Spacer(modifier = Modifier.weight(1f))
-            HeaderBarButton()
+            HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
         }
     }
 }
@@ -121,14 +119,19 @@ enum class Pages {
 @Preview
 @Composable
 fun DevelopmentScreen() {
-    val currentPage by remember { mutableStateOf(Pages.BodyRegions) }
 
-    HeaderBar()
+    var currentPage by remember { mutableStateOf(Pages.BodyRegions) }
+    val setCurrentPage = { page: Pages -> currentPage = page}
+
+    var currentLanguage by remember { mutableStateOf(Language.English) }
+    val setLanguage = { language: Language -> currentLanguage = language }
+
+    HeaderBar(setCurrentPage = setCurrentPage)
 
     when (currentPage) {
         Pages.BodyRegions -> {
             TextHeader("Body Part Selector")
-            BodyRegionsPage(standardModifier)
+            BodyRegionsPage(currentLanguage, standardModifier)
         }
         Pages.ScanType -> {
 
@@ -137,7 +140,7 @@ fun DevelopmentScreen() {
 
         }
         Pages.Settings -> {
-            SettingsPage()
+            SettingsPage(currentLanguage, setLanguage)
         }
     }
 }

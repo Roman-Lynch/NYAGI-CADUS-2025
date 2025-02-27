@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import com.google.aiedge.examples.imageclassification.language.Language
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,7 +76,7 @@ fun OptionsGrid(){
 
 // modifier here is standard modifier that applies to every page
 @Composable
-fun BodyRegionsPage(modifier: Modifier) {
+fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier) {
     Box(modifier = modifier){
 //        OptionsGrid()
         SelectorOption("Breast")
