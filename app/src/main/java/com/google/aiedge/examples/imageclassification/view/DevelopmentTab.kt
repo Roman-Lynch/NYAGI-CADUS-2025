@@ -128,10 +128,12 @@ fun DevelopmentScreen() {
 
     HeaderBar(setCurrentPage = setCurrentPage)
 
+    // include any modifier that applies to any page here
+    val defaultModifier = Modifier.padding(Theme.StandardPageMargin)
+
     when (currentPage) {
         Pages.BodyRegions -> {
-            TextHeader("Body Part Selector")
-            BodyRegionsPage(currentLanguage, standardModifier)
+            BodyRegionsPage(currentLanguage, defaultModifier)
         }
         Pages.ScanType -> {
 
@@ -140,7 +142,7 @@ fun DevelopmentScreen() {
 
         }
         Pages.Settings -> {
-            SettingsPage(currentLanguage, setLanguage)
+            SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
     }
 }
