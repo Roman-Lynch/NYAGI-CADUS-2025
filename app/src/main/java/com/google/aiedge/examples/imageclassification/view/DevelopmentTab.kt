@@ -79,7 +79,6 @@ fun HeaderBarButton(
     }
 }
 
-
 @Preview
 @Composable
 fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
@@ -117,7 +116,7 @@ fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
 }
 
 enum class Pages {
-    BodyRegions, Scan, Settings
+    BodyRegions, ScanType, Scan, Settings
 }
 
 @Preview
@@ -130,11 +129,17 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = { language: Language -> currentLanguage = language }
 
+    HeaderBar(setCurrentPage = setCurrentPage)
+
+    // include any modifier that applies to any page here
+    val defaultModifier = Modifier.padding(Theme.StandardPageMargin)
+
     when (currentPage) {
         Pages.BodyRegions -> {
-            HeaderBar(setCurrentPage = setCurrentPage)
-            TextHeader("Body Part Selector")
-            BodyRegionsPage(currentLanguage, standardModifier, setCurrentPage)
+            BodyRegionsPage(currentLanguage, defaultModifier)
+        }
+        Pages.ScanType -> {
+
         }
         Pages.Scan -> {
             BreastCameraPage(
@@ -145,8 +150,7 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
             )
         }
         Pages.Settings -> {
-            HeaderBar(setCurrentPage = setCurrentPage)
-            SettingsPage(currentLanguage, setLanguage)
+            SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
     }
 }

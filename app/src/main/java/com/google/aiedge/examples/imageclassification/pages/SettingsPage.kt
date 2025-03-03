@@ -27,16 +27,15 @@ import com.google.aiedge.examples.imageclassification.view.ContentDivider
 import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
 
-@Preview
 @Composable
 fun SettingsPage(
     currentLanguage: Language = Language.English,
-    setLanguage: (Language) -> Unit = {}
+    setLanguage: (Language) -> Unit = {},
+    modifier: Modifier
 ) {
 
     Column(
-        modifier = Modifier
-            .padding(Theme.StandardPageMargin)
+        modifier = modifier
             .verticalScroll(rememberScrollState())
             .height(1000.dp)
     ) {
