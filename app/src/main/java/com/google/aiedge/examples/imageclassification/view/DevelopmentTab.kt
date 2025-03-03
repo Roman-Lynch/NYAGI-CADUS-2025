@@ -56,24 +56,15 @@ fun DefaultAlert(onClick: () -> Unit) {
 fun HeaderBarButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    filePath: String = "Icons/GearIcon.png"
+    filePath: String
 ) {
-
-    Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .aspectRatio(1.0f)
-            .clip(CircleShape)
-            .clickable(onClick = onClick)
-    ) {
         AsyncImage(
             model = "file:///android_asset/${filePath}",
             contentDescription = null,
             modifier = Modifier
-                .fillMaxSize()
+                .size(70.dp)
+                .clickable(onClick = onClick)
         )
-    }
-
 }
 
 @Preview
@@ -83,32 +74,18 @@ fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
     var textHeight by remember { mutableStateOf(0) }
     val density = LocalDensity.current.density
 
-    Box(
-        modifier = Modifier
-            .background(Theme.NyagiGreen)
-            .fillMaxWidth()
-            .height(80.dp)
-            .padding(10.dp)
-            .onGloballyPositioned { coordinates ->
-                textHeight = coordinates.size.height
-            },
-    ) {
 
-        Row() {
-            HeaderBarButton(filePath = "Icons/BackIcon.png")
-            Spacer(Modifier.width(5.dp))
-            Text(
-                text = "NYAGI",
-                color = Theme.Black,
-                style = TextStyle(
-                    fontSize = (textHeight / density).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic,
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
-        }
+    Row(modifier = Modifier
+        .background(Theme.NyagiGreen)
+        .fillMaxWidth()
+        .height(80.dp)
+        .padding(horizontal = Theme.StandardPageMargin)
+        .onGloballyPositioned { coordinates -> textHeight = coordinates.size.height },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        HeaderBarButton(filePath = "Icons/BackIcon.png")
+        HeaderBarButton(onClick = { setCurrentPage(Pages.Settings)}, filePath = "Icons/GearIcon.png")
     }
 }
 
@@ -129,7 +106,7 @@ fun DevelopmentScreen() {
     HeaderBar(setCurrentPage = setCurrentPage)
 
     // include any modifier that applies to any page here
-    val defaultModifier = Modifier.padding(Theme.StandardPageMargin)
+    val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
     when (currentPage) {
         Pages.BodyRegions -> {
