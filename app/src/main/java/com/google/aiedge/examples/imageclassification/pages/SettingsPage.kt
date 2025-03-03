@@ -84,7 +84,7 @@ fun LanguageIcon(
             .clickable(onClick={onClick(language)})
             .border(
                 if (isSelected) 10.dp else 2.dp,
-                if (isSelected) Theme.NyagiPurple else Theme.NyagiGreen,
+                if (isSelected) Theme.Purple else Theme.Teal,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
@@ -102,7 +102,7 @@ fun LanguageIcon(
             modifier = Modifier
                 .fillMaxWidth(.8f)
                 .height(2.dp)
-                .background(Theme.NyagiGreen)
+                .background(Theme.Teal)
                 .align(Alignment.CenterHorizontally)
         )
         Text(

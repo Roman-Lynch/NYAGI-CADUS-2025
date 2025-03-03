@@ -13,5 +13,5 @@ fun ContentDivider() {
     Spacer(modifier = Modifier
         .height(3.dp)
         .fillMaxSize()
-        .background(Theme.NyagiPurple))
+        .background(Theme.Purple))
 }
