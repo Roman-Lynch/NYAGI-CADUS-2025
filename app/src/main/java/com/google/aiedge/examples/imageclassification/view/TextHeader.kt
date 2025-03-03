@@ -33,6 +33,6 @@ fun TextHeader(name:String){
 
         }
         ContentDivider()
-        Spacer(modifier= Modifier.height(15.dp))
+        Spacer(modifier= Modifier.height(25.dp))
     }
 }
