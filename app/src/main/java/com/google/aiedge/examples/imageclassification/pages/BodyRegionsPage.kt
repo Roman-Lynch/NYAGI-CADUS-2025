@@ -53,7 +53,7 @@ fun SelectorOption(optionName:String){
         .height(300.dp)
         .width(300.dp)
         .clip(RoundedCornerShape(10.dp))
-        .background(Theme.NyagiPurple)
+        .background(Theme.Purple)
         .paint(painter, contentScale = ContentScale.FillBounds)
         .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp))
     ) {

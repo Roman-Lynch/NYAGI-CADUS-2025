@@ -4,17 +4,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 data object Theme {
-    val DarkBlue = Color(0xFF020f59)
-    val Teal = Color(0xFF00c99e)
-    val Cyan = Color(0xFF5be3e3)
+    // these are divided exactly how they are on the figma.
+    // see figma prototype.
 
-    val NyagiPurple = Color(0xFF9191E9)
-    val NyagiTeal = Color(0xFFEAF6F2)
-    val NyagiOffWhite = Color(0xFFE9F6F0)
-    val NyagiDarkPurple = Color(0xFF1C0120)
-    val Black = Color(0xFF1D1B20)
+    // colors for main app
+    val White = Color(0xFFFFFFFF)
     val Grey = Color(0xFFDADFDD)
-    val NyagiGreen = Color(0xFFBBCBC7)
+    val Teal = Color(0xFFEAF6F2)
+    val Purple = Color(0xFF9191E9)
+    val TextBlack = Color(0xFF1D1B20)
+
+    // colors for camera scheme
+    // white
+    val Black = Color(0xFF000000)
+    val Green = Color(0xFF207D18)
+    val Red = Color(0xFFB70B0B)
+
 
     val StandardPageMargin = 25.dp
 }

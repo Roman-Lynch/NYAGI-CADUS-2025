@@ -76,7 +76,7 @@ fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
 
 
     Row(modifier = Modifier
-        .background(Theme.NyagiGreen)
+        .background(Theme.Teal)
         .fillMaxWidth()
         .height(80.dp)
         .padding(horizontal = Theme.StandardPageMargin)
