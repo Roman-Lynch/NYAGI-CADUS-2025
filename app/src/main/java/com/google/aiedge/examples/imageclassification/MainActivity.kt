@@ -165,7 +165,10 @@ class MainActivity : ComponentActivity() {
                     },
                 )
 
-                Tab.Development -> DevelopmentScreen()
+                Tab.Development -> DevelopmentScreen(
+                    uiState = uiState,
+                    onImageProxyAnalyzed = {onImageProxyAnalyzed(it)}
+                )
             }
         }
     }

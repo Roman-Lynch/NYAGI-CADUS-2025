@@ -1,6 +1,7 @@
 package com.google.aiedge.examples.imageclassification.view
 
 import androidx.compose.foundation.background
+import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,9 +20,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
+import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
+import com.google.aiedge.examples.imageclassification.*
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -73,8 +77,8 @@ fun HeaderBarButton(
                 .fillMaxSize()
         )
     }
-
 }
+
 
 @Preview
 @Composable
@@ -113,12 +117,12 @@ fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
 }
 
 enum class Pages {
-    BodyRegions, ScanType, Scan, Settings
+    BodyRegions, Scan, Settings
 }
 
 @Preview
 @Composable
-fun DevelopmentScreen() {
+fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Unit) {
 
     var currentPage by remember { mutableStateOf(Pages.BodyRegions) }
     val setCurrentPage = { page: Pages -> currentPage = page}
@@ -126,20 +130,22 @@ fun DevelopmentScreen() {
     var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = { language: Language -> currentLanguage = language }
 
-    HeaderBar(setCurrentPage = setCurrentPage)
-
     when (currentPage) {
         Pages.BodyRegions -> {
+            HeaderBar(setCurrentPage = setCurrentPage)
             TextHeader("Body Part Selector")
-            BodyRegionsPage(currentLanguage, standardModifier)
-        }
-        Pages.ScanType -> {
-
+            BodyRegionsPage(currentLanguage, standardModifier, setCurrentPage)
         }
         Pages.Scan -> {
-
+            BreastCameraPage(
+                uiState,
+                currentLanguage,
+                modifier = Modifier.fillMaxWidth(),
+                onImageProxyAnalyzed = onImageProxyAnalyzed,
+            )
         }
         Pages.Settings -> {
+            HeaderBar(setCurrentPage = setCurrentPage)
             SettingsPage(currentLanguage, setLanguage)
         }
     }
