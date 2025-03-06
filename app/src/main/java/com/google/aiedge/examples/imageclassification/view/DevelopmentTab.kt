@@ -141,7 +141,7 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
                 uiState,
                 currentLanguage,
                 modifier = Modifier.fillMaxWidth(),
-                onImageProxyAnalyzed = onImageProxyAnalyzed,
+                onImageAnalyzed = onImageProxyAnalyzed,
             )
         }
         Pages.Settings -> {
