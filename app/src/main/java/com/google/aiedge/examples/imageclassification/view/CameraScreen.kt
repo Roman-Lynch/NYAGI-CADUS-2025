@@ -17,6 +17,8 @@
 package com.google.aiedge.examples.imageclassification.view
 
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.fonts.FontStyle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -29,19 +31,40 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Size.Companion.ORIGINAL
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.aiedge.examples.imageclassification.UiState
 import java.util.concurrent.ExecutorService
@@ -75,12 +98,50 @@ fun CameraScreen(
             launcher.launch(android.Manifest.permission.CAMERA)
         }
     }
-    Box(modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
         CameraPreview(onImageAnalyzed = { imageProxy ->
             onImageAnalyzed(imageProxy)
         })
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            orientation(modifier = Modifier, "screen-rotate")
+        }
     }
+}
 
+@Composable
+fun orientation(
+    modifier: Modifier,
+    optionName: String
+) {
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data("file:///android_asset/Icons/${optionName}.png")
+            .size(ORIGINAL)
+            .build(),
+        contentScale = ContentScale.FillBounds
+    )
+    Box(
+        modifier = Modifier
+            .height(300.dp)
+            .width(300.dp)
+            .padding(25.dp)
+            .clip(RoundedCornerShape(25.dp))
+            .background(Color.DarkGray.copy(alpha = 0.85f), shape = RoundedCornerShape(25.dp))
+            .paint(painter, alignment = Alignment.TopCenter)
+            .border(3.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Flip screen",
+            modifier = Modifier.align(Alignment.BottomCenter).padding(5.dp),
+            fontSize = 25.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 @Composable
