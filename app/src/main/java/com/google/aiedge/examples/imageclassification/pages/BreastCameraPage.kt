@@ -1,32 +1,19 @@
-/*
- * Copyright 2024 The Google AI Edge Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.google.aiedge.examples.imageclassification.view
+package com.google.aiedge.examples.imageclassification.pages
 
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.content.res.Configuration
-import android.graphics.fonts.FontStyle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.camera.core.AspectRatio.RATIO_4_3
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -35,43 +22,64 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.*
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
-import com.google.common.util.concurrent.ListenableFuture
+
 import com.google.aiedge.examples.imageclassification.UiState
+import com.google.aiedge.examples.imageclassification.MainViewModel
+import com.google.aiedge.examples.imageclassification.MainActivity
+import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.view.CameraScreen
+import com.google.aiedge.examples.imageclassification.view.Theme
+import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+//@Composable
+//fun BreastCameraPage(
+//    uiState: UiState,
+//    currentLanguage: Language,
+//    modifier: Modifier = Modifier,
+//    onImageProxyAnalyzed: (ImageProxy) -> Unit,
+//) {
+//    CameraScreen(
+//        uiState = uiState,
+//        modifier = modifier,
+//        onImageAnalyzed = {
+//            onImageProxyAnalyzed(it)
+//        },
+//    )
+//
+//
+//}
+
 @Composable
-fun CameraScreen(
+fun BreastCameraPage(
     uiState: UiState,
+    currentLanguage: Language,
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy) -> Unit,
 ) {
@@ -104,6 +112,94 @@ fun CameraScreen(
         CameraPreview(onImageAnalyzed = { imageProxy ->
             onImageAnalyzed(imageProxy)
         })
+        val categories = uiState.categories
+        var highestCategory = "benign"
+        var highestScore = 0.0f
+        for (category in categories) {
+            if (category.score > highestScore) {
+                highestCategory = category.label
+                highestScore = category.score
+            }
+        }
+        if (highestScore > .0f) { // change when on phone
+            if (highestCategory == "benign") {
+                dangerWarning(modifier = Modifier, Color.Green)
+            }
+            if (highestCategory == "malignant") {
+                dangerWarning(modifier = Modifier, Color.Red)
+            }
+        }
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            orientation(modifier = Modifier, "screen-rotate")
+        }
+    }
+}
+
+@Composable
+fun orientation(
+    modifier: Modifier,
+    optionName: String
+) {
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data("file:///android_asset/Icons/${optionName}.png")
+            .size(ORIGINAL)
+            .build(),
+        contentScale = ContentScale.FillBounds
+    )
+    Box(
+        modifier = Modifier
+            .height(300.dp)
+            .width(300.dp)
+            .padding(25.dp)
+            .clip(RoundedCornerShape(25.dp))
+            .background(Color.Black.copy(alpha = 0.80f), shape = RoundedCornerShape(25.dp))
+            .paint(painter, alignment = Alignment.TopCenter, colorFilter = ColorFilter.tint(Color.White)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Flip screen",
+            modifier = Modifier.align(Alignment.BottomCenter).padding(5.dp),
+            fontSize = 25.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+    }
+}
+
+// adapted from https://stackoverflow.com/questions/74074525/jetpack-compose-how-to-cut-out-card-shape
+// and https://blog.jakelee.co.uk/how-to-make-cutouts-in-jetpack-compose-boxes/
+@Composable
+fun dangerWarning(
+    modifier: Modifier,
+    color: Color
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                compositingStrategy = CompositingStrategy.Offscreen
+            }
+            .drawWithContent {
+                drawContent()
+
+                val canvasWidth = size.width
+                val canvasHeight = size.height
+
+
+                val width = canvasWidth * .9f
+                val height = canvasHeight * .95f
+                drawRect(
+                    color = Color(0xFFFFFFFF),
+                    topLeft = Offset(x = (canvasWidth - width) / 2, y = (canvasHeight - height) / 2),
+                    size = Size(width, height),
+                    blendMode = BlendMode.DstOut
+                )
+            }
+            .background(color.copy(alpha = 0.3f))
+    ) {
+
     }
 }
 
