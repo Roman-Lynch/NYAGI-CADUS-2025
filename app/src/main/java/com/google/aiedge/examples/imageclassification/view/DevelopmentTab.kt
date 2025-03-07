@@ -83,36 +83,17 @@ fun HeaderBarButton(
 @Preview
 @Composable
 fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
-
-    var textHeight by remember { mutableStateOf(0) }
-    val density = LocalDensity.current.density
-
-    Box(
+    Row(
         modifier = Modifier
             .background(Theme.Teal)
             .fillMaxWidth()
             .height(80.dp)
-            .padding(10.dp)
-            .onGloballyPositioned { coordinates ->
-                textHeight = coordinates.size.height
-            },
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-
-        Row() {
-            HeaderBarButton(filePath = "Icons/BackIcon.png")
-            Spacer(Modifier.width(5.dp))
-            Text(
-                text = "NYAGI",
-                color = Theme.Black,
-                style = TextStyle(
-                    fontSize = (textHeight / density).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic,
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
-        }
+        HeaderBarButton(filePath = "Icons/BackIcon.png")
+        HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
     }
 }
 
@@ -133,7 +114,6 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     when (currentPage) {
         Pages.BodyRegions -> {
             HeaderBar(setCurrentPage = setCurrentPage)
-            TextHeader("Body Part Selector")
             BodyRegionsPage(currentLanguage, standardModifier, setCurrentPage)
         }
         Pages.Scan -> {
