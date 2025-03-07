@@ -1,0 +1,4 @@
+# Location of the SDK. This is only used by Gradle.
+# The URL used here is an example where the Gradle be stored on an Apple device
+# but this may not be your Gradle location.
+sdk.dir=/Users/YOUR_USER_NAME/Library/Android/sdk
