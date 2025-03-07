@@ -44,6 +44,32 @@ fun SettingsPage(
         // language selection
         SettingsSectionTitle(SettingsPageText.language.get(currentLanguage), "LanguageIcon")
         FlagsPanel(currentLanguage, setLanguage)
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // about section
+        SettingsSectionTitle("About", "Info")
+        Row{
+            Text("Version: ")
+            Text("1.1.0-alpha",
+                fontWeight = FontWeight.Bold)
+        }
+        // about page button
+        AboutPageButton()
+    }
+}
+@Preview
+@Composable
+fun AboutPageButton(){
+    Row(modifier = Modifier
+        .clip(RoundedCornerShape(5.dp))
+        .background(Theme.Grey)
+        .padding(5.dp)
+        .height(20.dp)
+        .fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically) {
+        Text("About ")
+        Text("NYAGI CADUS", fontWeight = FontWeight.Bold)
     }
 }
 @Composable
