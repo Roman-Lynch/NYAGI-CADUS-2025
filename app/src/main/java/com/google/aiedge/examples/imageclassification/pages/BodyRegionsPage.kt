@@ -30,6 +30,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.DevelopmentScreen
+import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
 import androidx.compose.foundation.layout.Column
 
