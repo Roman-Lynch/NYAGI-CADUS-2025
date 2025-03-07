@@ -31,7 +31,9 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.DevelopmentScreen
+import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
+import androidx.compose.foundation.layout.Column
 
 // include all implemented model options here
 private val options:List<String> = listOf("Breast", "Pregnancy", "Early Pregnancy", "Late Pregnancy", "Shoulder")
@@ -97,7 +99,8 @@ fun OptionsGrid(){
 // modifier here is standard modifier that applies to every page
 @Composable
 fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, setCurrentPage: (Pages) -> Unit) {
-    Box(modifier = modifier) {
+    Column(modifier = modifier) {
+        TextHeader("Body Part Selector")
 //        OptionsGrid()
         SelectorOption("Breast", setCurrentPage)
     }
