@@ -40,26 +40,37 @@ fun SettingsPage(
             .height(1000.dp)
     ) {
         TextHeader(SettingsPageText.title.get(currentLanguage))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = toAndroidPath("Icons/LanguageIcon.png"),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(30.dp)
-                    .align(Alignment.CenterVertically),
-                contentScale = ContentScale.Fit
-            )
-            Text(SettingsPageText.language.get(currentLanguage),
-                modifier= Modifier
-                    .padding(horizontal = 10.dp)
-                    .align(Alignment.CenterVertically),
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        ContentDivider(color = Theme.Grey)
+
+        // language selection
+        SettingsSectionTitle(SettingsPageText.language.get(currentLanguage), "LanguageIcon")
         FlagsPanel(currentLanguage, setLanguage)
     }
+}
+@Composable
+fun SettingsSectionTitle(
+    title:String,
+    symbolFile:String,
+){
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AsyncImage(
+            model = toAndroidPath("Icons/${symbolFile}.png"),
+            contentDescription = null,
+            modifier = Modifier
+                .size(30.dp)
+                .align(Alignment.CenterVertically),
+            contentScale = ContentScale.Fit
+        )
+        Text(title,
+            modifier= Modifier
+                .padding(horizontal = 10.dp)
+                .align(Alignment.CenterVertically),
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+        )
+    }
+    Spacer(modifier = Modifier.height(3.dp))
+    ContentDivider(color = Theme.Grey)
+    Spacer(modifier = Modifier.height(3.dp))
 }
 
 @Preview
@@ -83,7 +94,7 @@ fun LanguageIcon(
             .width(160.dp)
             .clickable(onClick={onClick(language)})
             .border(
-                if (isSelected) 10.dp else 2.dp,
+                if (isSelected) 3.dp else 2.dp,
                 if (isSelected) Theme.Purple else Theme.Teal,
                 shape = RoundedCornerShape(10.dp)
             )
@@ -115,7 +126,9 @@ fun LanguageIcon(
                 .height(40.dp)
                 .onGloballyPositioned { coordinates ->
                     textHeight = coordinates.size.height
-                },
+                }
+            ,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
         )
     }
 }
