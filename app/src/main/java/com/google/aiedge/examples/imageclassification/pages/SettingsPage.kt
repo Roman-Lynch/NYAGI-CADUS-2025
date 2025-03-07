@@ -40,24 +40,24 @@ fun SettingsPage(
             .height(1000.dp)
     ) {
         TextHeader(SettingsPageText.title.get(currentLanguage))
-        Row() {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = toAndroidPath("Icons/LanguageIcon.png"),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(30.dp)
                     .align(Alignment.CenterVertically),
                 contentScale = ContentScale.Fit
             )
             Text(SettingsPageText.language.get(currentLanguage),
                 modifier= Modifier
-                    .padding(vertical=25.dp)
+                    .padding(horizontal = 10.dp)
                     .align(Alignment.CenterVertically),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
-        ContentDivider()
+        ContentDivider(color = Theme.Grey)
         FlagsPanel(currentLanguage, setLanguage)
     }
 }
@@ -109,8 +109,6 @@ fun LanguageIcon(
             text = language.nativeName,
             style = TextStyle(
                 fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontStyle = FontStyle.Italic,
             ),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
