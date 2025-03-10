@@ -1,20 +1,15 @@
 package com.google.aiedge.examples.imageclassification.view
 
-import androidx.compose.foundation.background
 import androidx.camera.core.ImageProxy
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
@@ -41,46 +36,6 @@ fun DefaultAlert(onClick: () -> Unit) {
             }
         }
     )
-}
-
-@Composable
-fun HeaderBarButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-    filePath: String
-) {
-    Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .aspectRatio(1.0f)
-            .clip(CircleShape)
-            .clickable(onClick = onClick)
-    ) {
-        AsyncImage(
-            model = "file:///android_asset/${filePath}",
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-        )
-    }
-}
-
-
-@Preview
-@Composable
-fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
-    Row(
-        modifier = Modifier
-            .background(Theme.Teal)
-            .fillMaxWidth()
-            .height(80.dp)
-            .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        HeaderBarButton(filePath = "Icons/BackIcon.png")
-        HeaderBarButton(filePath = "Icons/GearIcon.png", onClick = { setCurrentPage(Pages.Settings) })
-    }
 }
 
 enum class Pages {
