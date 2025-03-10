@@ -2,14 +2,11 @@ package com.google.aiedge.examples.imageclassification.view
 
 import androidx.compose.foundation.background
 import androidx.camera.core.ImageProxy
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -19,8 +16,6 @@ import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
-import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
-import com.google.aiedge.examples.imageclassification.*
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -49,21 +44,18 @@ fun DefaultAlert(onClick: () -> Unit) {
     )
 }
 
-
-@Preview
 @Composable
 fun HeaderBarButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     filePath: String
 ) {
-        AsyncImage(
-            model = "file:///android_asset/${filePath}",
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-        )
-    }
+    AsyncImage(
+        model = "file:///android_asset/${filePath}",
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxSize()
+    )
 }
 
 
@@ -80,7 +72,7 @@ fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         HeaderBarButton(filePath = "Icons/BackIcon.png")
-        HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
+        HeaderBarButton(filePath = "Icons/GearIcon.png", onClick = { setCurrentPage(Pages.Settings) })
     }
 }
 
@@ -88,7 +80,6 @@ enum class Pages {
     BodyRegions, ScanType, Scan, Settings
 }
 
-@Preview
 @Composable
 fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Unit) {
 
@@ -105,7 +96,7 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
 
     when (currentPage) {
         Pages.BodyRegions -> {
-            BodyRegionsPage(currentLanguage, defaultModifier)
+            BodyRegionsPage(currentLanguage, defaultModifier, setCurrentPage)
         }
         Pages.ScanType -> {
 
