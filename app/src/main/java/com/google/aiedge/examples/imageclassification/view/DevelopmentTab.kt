@@ -54,7 +54,7 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
 
     val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
 
-    HeaderBar(navigationStack)
+    HeaderBar(navigationStack, currentLanguage)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
