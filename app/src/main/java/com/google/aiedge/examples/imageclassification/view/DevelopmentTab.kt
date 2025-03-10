@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
+import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
@@ -51,13 +52,15 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = { language: Language -> currentLanguage = language }
 
-    HeaderBar(setCurrentPage = setCurrentPage)
+    val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
+
+    HeaderBar(navigationStack)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
     when (currentPage) {
         Pages.BodyRegions -> {
-            BodyRegionsPage(currentLanguage, defaultModifier, setCurrentPage)
+            BodyRegionsPage(currentLanguage, defaultModifier, navigationStack)
         }
         Pages.ScanType -> {
 

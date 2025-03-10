@@ -27,6 +27,7 @@ import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.Theme
 import androidx.compose.foundation.layout.Column
+import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
 
 // include all implemented model options here
 private val options:List<String> = listOf("Breast", "Pregnancy", "Early Pregnancy", "Late Pregnancy", "Shoulder")
@@ -45,7 +46,7 @@ fun CameraButton(
 
 
 @Composable
-fun SelectorOption(optionName:String, setCurrentPage: (Pages) -> Unit = {}) {
+fun SelectorOption(optionName:String, navigationStack: NavigationStack<Pages>) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data("file:///android_asset/ModelSelectionIcons/${optionName}.png")
@@ -68,7 +69,7 @@ fun SelectorOption(optionName:String, setCurrentPage: (Pages) -> Unit = {}) {
         .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)
         )
     ) {
-        CameraButton(onClick = {setCurrentPage(Pages.Scan) })
+        CameraButton(onClick = {navigationStack.push(Pages.Scan) })
         Box(
             Modifier
                 .fillMaxWidth()
@@ -84,22 +85,16 @@ fun SelectorOption(optionName:String, setCurrentPage: (Pages) -> Unit = {}) {
 fun OptionsGrid(){
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
         items(options){ option ->
-            SelectorOption(option)
+//            SelectorOption(option)
         }
     }
 }
 
 // modifier here is standard modifier that applies to every page
 @Composable
-fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, setCurrentPage: (Pages) -> Unit) {
+fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, navigationStack: NavigationStack<Pages>) {
     Column(modifier = modifier) {
 //        OptionsGrid()
-        SelectorOption("Breast", setCurrentPage)
+        SelectorOption("Breast", navigationStack)
     }
-}
-
-@Preview
-@Composable
-fun Preview(){
-    SelectorOption("Early Pregnancy")
 }
