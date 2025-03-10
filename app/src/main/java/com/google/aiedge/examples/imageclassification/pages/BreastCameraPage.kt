@@ -52,6 +52,7 @@ import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.MainActivity
+import com.google.aiedge.examples.imageclassification.NoCameraPermissionsAlert
 import com.google.aiedge.examples.imageclassification.language.CameraText
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.view.CameraScreen
@@ -67,17 +68,21 @@ fun BreastCameraPage(
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy) -> Unit,
 ) {
+    var showAlert by remember { mutableStateOf(true) }
+
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            showAlert = false
             // Do nothing
         } else {
-            // Permission Denied
-            Toast.makeText(context, "Camera permission is denied", Toast.LENGTH_SHORT).show()
+            // Do nothing
         }
     }
+
+    if (showAlert) NoCameraPermissionsAlert({showAlert = false}, currentLanguage)
 
     LaunchedEffect(key1 = uiState.errorMessage) {
         if (ContextCompat.checkSelfPermission(

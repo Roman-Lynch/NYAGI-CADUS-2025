@@ -15,30 +15,6 @@ import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
 
-@Composable
-fun DefaultAlert(onClick: () -> Unit) {
-
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text("Setting Button Test") },
-        text = { Text("Settings Button Is Working") },
-        buttons = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally, // Optional: Centers the buttons horizontally
-                verticalArrangement = Arrangement.spacedBy(16.dp), // Optional: Adds space between the buttons
-                modifier = Modifier.padding(16.dp) // Optional: Adds padding around the column
-            ) {
-                TextButton(onClick = onClick) {
-                    Text("Ok")
-                }
-                TextButton(onClick = onClick) {
-                    Text("Cancel")
-                }
-            }
-        }
-    )
-}
-
 enum class Pages {
     BodyRegions, ScanType, Scan, Settings
 }
