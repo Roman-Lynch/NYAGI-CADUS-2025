@@ -27,40 +27,76 @@ import com.google.aiedge.examples.imageclassification.view.ContentDivider
 import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
 
-@Preview
 @Composable
 fun SettingsPage(
     currentLanguage: Language = Language.English,
-    setLanguage: (Language) -> Unit = {}
+    setLanguage: (Language) -> Unit = {},
+    modifier: Modifier
 ) {
 
     Column(
-        modifier = Modifier
-            .padding(Theme.StandardPageMargin)
+        modifier = modifier
             .verticalScroll(rememberScrollState())
             .height(1000.dp)
     ) {
         TextHeader(SettingsPageText.title.get(currentLanguage))
-        Row() {
-            AsyncImage(
-                model = toAndroidPath("Icons/LanguageIcon.png"),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterVertically),
-                contentScale = ContentScale.Fit
-            )
-            Text(SettingsPageText.language.get(currentLanguage),
-                modifier= Modifier
-                    .padding(vertical=25.dp)
-                    .align(Alignment.CenterVertically),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        ContentDivider()
+
+        // language selection
+        SettingsSectionTitle(SettingsPageText.language.get(currentLanguage), "LanguageIcon")
         FlagsPanel(currentLanguage, setLanguage)
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // about section
+        SettingsSectionTitle("About", "Info")
+        Row{
+            Text("Version: ")
+            Text("1.1.0-alpha",
+                fontWeight = FontWeight.Bold)
+        }
+        // about page button
+        AboutPageButton()
     }
+}
+@Preview
+@Composable
+fun AboutPageButton(){
+    Row(modifier = Modifier
+        .clip(RoundedCornerShape(5.dp))
+        .background(Theme.Grey)
+        .padding(5.dp)
+        .height(20.dp)
+        .fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically) {
+        Text("About ")
+        Text("NYAGI CADUS", fontWeight = FontWeight.Bold)
+    }
+}
+@Composable
+fun SettingsSectionTitle(
+    title:String,
+    symbolFile:String,
+){
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AsyncImage(
+            model = toAndroidPath("Icons/${symbolFile}.png"),
+            contentDescription = null,
+            modifier = Modifier
+                .size(30.dp)
+                .align(Alignment.CenterVertically),
+            contentScale = ContentScale.Fit
+        )
+        Text(title,
+            modifier= Modifier
+                .padding(horizontal = 10.dp)
+                .align(Alignment.CenterVertically),
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+        )
+    }
+    Spacer(modifier = Modifier.height(3.dp))
+    ContentDivider(color = Theme.Grey)
+    Spacer(modifier = Modifier.height(3.dp))
 }
 
 @Preview
@@ -84,8 +120,8 @@ fun LanguageIcon(
             .width(160.dp)
             .clickable(onClick={onClick(language)})
             .border(
-                if (isSelected) 10.dp else 2.dp,
-                if (isSelected) Theme.NyagiPurple else Theme.NyagiGreen,
+                if (isSelected) 3.dp else 2.dp,
+                if (isSelected) Theme.Purple else Theme.Teal,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
@@ -103,22 +139,22 @@ fun LanguageIcon(
             modifier = Modifier
                 .fillMaxWidth(.8f)
                 .height(2.dp)
-                .background(Theme.NyagiGreen)
+                .background(Theme.Teal)
                 .align(Alignment.CenterHorizontally)
         )
         Text(
             text = language.nativeName,
             style = TextStyle(
                 fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontStyle = FontStyle.Italic,
             ),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .height(40.dp)
                 .onGloballyPositioned { coordinates ->
                     textHeight = coordinates.size.height
-                },
+                }
+            ,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
         )
     }
 }

@@ -10,25 +10,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
-import com.google.aiedge.examples.imageclassification.*
-
-private val horizontalPadding: Dp = 25.dp // standard margins for page
-private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
 
 @Composable
 fun DefaultAlert(onClick: () -> Unit) {
@@ -54,15 +43,12 @@ fun DefaultAlert(onClick: () -> Unit) {
     )
 }
 
-
-@Preview
 @Composable
 fun HeaderBarButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    filePath: String = "Icons/GearIcon.png"
+    filePath: String
 ) {
-
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -83,44 +69,24 @@ fun HeaderBarButton(
 @Preview
 @Composable
 fun HeaderBar(setCurrentPage: (Pages) -> Unit = {}) {
-
-    var textHeight by remember { mutableStateOf(0) }
-    val density = LocalDensity.current.density
-
-    Box(
+    Row(
         modifier = Modifier
-            .background(Theme.NyagiGreen)
+            .background(Theme.Teal)
             .fillMaxWidth()
             .height(80.dp)
-            .padding(10.dp)
-            .onGloballyPositioned { coordinates ->
-                textHeight = coordinates.size.height
-            },
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-
-        Row() {
-            HeaderBarButton(filePath = "Icons/BackIcon.png")
-            Spacer(Modifier.width(5.dp))
-            Text(
-                text = "NYAGI",
-                color = Theme.Black,
-                style = TextStyle(
-                    fontSize = (textHeight / density).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic,
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            HeaderBarButton(onClick = { setCurrentPage(Pages.Settings) })
-        }
+        HeaderBarButton(filePath = "Icons/BackIcon.png")
+        HeaderBarButton(filePath = "Icons/GearIcon.png", onClick = { setCurrentPage(Pages.Settings) })
     }
 }
 
 enum class Pages {
-    BodyRegions, Scan, Settings
+    BodyRegions, ScanType, Scan, Settings
 }
 
-@Preview
 @Composable
 fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Unit) {
 
@@ -130,11 +96,16 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = { language: Language -> currentLanguage = language }
 
+    HeaderBar(setCurrentPage = setCurrentPage)
+
+    val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
+
     when (currentPage) {
         Pages.BodyRegions -> {
-            HeaderBar(setCurrentPage = setCurrentPage)
-            TextHeader("Body Part Selector")
-            BodyRegionsPage(currentLanguage, standardModifier, setCurrentPage)
+            BodyRegionsPage(currentLanguage, defaultModifier, setCurrentPage)
+        }
+        Pages.ScanType -> {
+
         }
         Pages.Scan -> {
             BreastCameraPage(
@@ -145,8 +116,7 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
             )
         }
         Pages.Settings -> {
-            HeaderBar(setCurrentPage = setCurrentPage)
-            SettingsPage(currentLanguage, setLanguage)
+            SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
     }
 }
