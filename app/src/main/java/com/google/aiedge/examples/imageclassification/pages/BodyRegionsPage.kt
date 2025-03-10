@@ -15,13 +15,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.view.Pages
-import com.google.aiedge.examples.imageclassification.view.DevelopmentScreen
-import androidx.compose.ui.Alignment
-import com.google.aiedge.examples.imageclassification.view.Pages
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
-import com.google.aiedge.examples.imageclassification.view.DevelopmentScreen
-import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
 import androidx.compose.foundation.layout.Column
 

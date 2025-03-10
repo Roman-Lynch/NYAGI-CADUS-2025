@@ -2,6 +2,7 @@ package com.google.aiedge.examples.imageclassification.view
 
 import androidx.compose.foundation.background
 import androidx.camera.core.ImageProxy
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -16,6 +17,8 @@ import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
+import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
+import com.google.aiedge.examples.imageclassification.*
 
 private val horizontalPadding: Dp = 25.dp // standard margins for page
 private val standardModifier:Modifier = Modifier.padding(horizontal = horizontalPadding)
@@ -91,7 +94,6 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
 
     HeaderBar(setCurrentPage = setCurrentPage)
 
-    // include any modifier that applies to any page here
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
     when (currentPage) {
