@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -51,30 +52,14 @@ import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.MainActivity
+import com.google.aiedge.examples.imageclassification.NoCameraPermissionsAlert
+import com.google.aiedge.examples.imageclassification.language.CameraText
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.view.CameraScreen
 import com.google.aiedge.examples.imageclassification.view.Theme
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
-//@Composable
-//fun BreastCameraPage(
-//    uiState: UiState,
-//    currentLanguage: Language,
-//    modifier: Modifier = Modifier,
-//    onImageProxyAnalyzed: (ImageProxy) -> Unit,
-//) {
-//    CameraScreen(
-//        uiState = uiState,
-//        modifier = modifier,
-//        onImageAnalyzed = {
-//            onImageProxyAnalyzed(it)
-//        },
-//    )
-//
-//
-//}
 
 @Composable
 fun BreastCameraPage(
@@ -83,17 +68,21 @@ fun BreastCameraPage(
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy) -> Unit,
 ) {
+    var showAlert by remember { mutableStateOf(true) }
+
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            showAlert = false
             // Do nothing
         } else {
-            // Permission Denied
-            Toast.makeText(context, "Camera permission is denied", Toast.LENGTH_SHORT).show()
+            // Do nothing
         }
     }
+
+    if (showAlert) NoCameraPermissionsAlert({showAlert = false}, currentLanguage)
 
     LaunchedEffect(key1 = uiState.errorMessage) {
         if (ContextCompat.checkSelfPermission(
@@ -131,7 +120,7 @@ fun BreastCameraPage(
         }
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            orientation(modifier = Modifier, "screen-rotate")
+            orientation(modifier = Modifier, "screen-rotate", currentLanguage)
         }
     }
 }
@@ -139,7 +128,8 @@ fun BreastCameraPage(
 @Composable
 fun orientation(
     modifier: Modifier,
-    optionName: String
+    optionName: String,
+    currentLanguage: Language
 ) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -159,7 +149,7 @@ fun orientation(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Flip screen",
+            text = CameraText.rotateScreen.get(currentLanguage),
             modifier = Modifier.align(Alignment.BottomCenter).padding(5.dp),
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,

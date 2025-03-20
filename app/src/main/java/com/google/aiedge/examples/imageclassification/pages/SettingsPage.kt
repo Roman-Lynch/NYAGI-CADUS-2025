@@ -13,6 +13,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -124,6 +126,7 @@ fun LanguageIcon(
                 if (isSelected) Theme.Purple else Theme.Teal,
                 shape = RoundedCornerShape(10.dp)
             )
+            .semantics { contentDescription = language.name },
     ) {
         AsyncImage(
             model = toAndroidPath(language.flagPath),
