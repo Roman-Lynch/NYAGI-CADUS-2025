@@ -26,6 +26,7 @@ Our mission is to empower local healthcare workers in resource-poor areas with a
 ## Contact
 
 For more information about CADUS or the NYAGI Project, please contact:
+
 Sponsor Dr. Cliff Gronseth: cliff.gronseth@nyagi.org
 
 ## Acknowledgements
