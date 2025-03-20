@@ -2,13 +2,12 @@ package com.google.aiedge.examples.imageclassification.view
 
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.language.LanguageSettingsGateway
 import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
 import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
@@ -25,8 +24,12 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     var currentPage by remember { mutableStateOf(Pages.BodyRegions) }
     val setCurrentPage = { page: Pages -> currentPage = page}
 
-    var currentLanguage by remember { mutableStateOf(Language.English) }
-    val setLanguage = { language: Language -> currentLanguage = language }
+    val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
+    var currentLanguage by remember { mutableStateOf(languageSettingsGateway.getSavedLanguage()) }
+    val setLanguage = {
+        language: Language -> currentLanguage = language
+        languageSettingsGateway.setSavedLanguage(language)
+    }
 
     val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
 

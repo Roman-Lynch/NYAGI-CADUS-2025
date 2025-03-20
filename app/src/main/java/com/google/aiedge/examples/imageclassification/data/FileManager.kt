@@ -4,33 +4,34 @@ import org.json.JSONObject
 
 class FileManager(private val context: Context) {
 
-    fun createDirectory(dirName: String): File? {
-        val directory = File("${context.getExternalFilesDir(null)}/$dirName")
+
+    fun getFileFromExternalStorage(context: Context, directoryPath: String, fileName: String): File {
+        val directory = File("${context.getExternalFilesDir(null)}/$directoryPath")
+        return File(directory, fileName)
+    }
+
+    fun createDirectory(directoryName: String): File? {
+        val directory = File("${context.getExternalFilesDir(null)}/$directoryName")
         return if (!directory.exists()) {
             if (directory.mkdirs()) directory else null
         } else directory
     }
 
-    fun writeFile(fileName: String, content: String, dir: File) {
-        val file = File(dir, fileName)
+    fun writeFile(file: File, content: String) {
         file.writeText(content)
     }
 
-    fun readFile(fileName: String, dir: File): String? {
-        val file = File(dir, fileName)
+    fun readFile(file: File): String? {
         return if (file.exists()) file.readText() else null
     }
 
-    fun writeJson(fileName: String, dir: File, addJsonToJsonObject: (JSONObject) -> Unit) {
-        val jsonObject = JSONObject()
+    fun writeJson(file: File, jsonObject: JSONObject) {
 
-        addJsonToJsonObject(jsonObject)
-
-        writeFile(fileName, jsonObject.toString(4), dir)
+        writeFile(file, jsonObject.toString(4))
     }
 
-    fun readJson(fileName: String, dir: File): JSONObject? {
-        val jsonString = readFile(fileName, dir)
+    fun readJson(file: File): JSONObject? {
+        val jsonString = readFile(file)
         return jsonString?.let { JSONObject(it) }
     }
 }
