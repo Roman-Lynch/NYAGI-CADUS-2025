@@ -2,6 +2,7 @@ package com.google.aiedge.examples.imageclassification.data;
 
 import FileManager
 import android.content.Context
+import android.util.Log
 import com.google.aiedge.examples.imageclassification.language.Language
 import org.json.JSONObject
 import java.io.File
@@ -14,10 +15,6 @@ class Configurations(private val context: Context) {
 
     private val configurations: File = fileManager.getOrCreateFile("", "configurations.json", getDefaultConfigurations().toString()) ?: throw ConfigurationDoesNotExistException()
 
-    init {
-        fileManager.writeJson(configurations, getDefaultConfigurations())
-    }
-
     private fun getDefaultConfigurations(): JSONObject {
 
         return JSONObject().apply {
@@ -27,6 +24,8 @@ class Configurations(private val context: Context) {
 
     fun getFromConfigurations(key: String, isValid: (String) -> Boolean): String {
         val configurationsJSON: JSONObject = fileManager.readJson(configurations) ?: throw ConfigurationDoesNotExistException()
+
+        Log.d("Main Activity", "Contents of configurations file: $configurationsJSON")
 
         val value: String = configurationsJSON.getString(key)
         if (!isValid(value)) throw InvalidConfigurationException()

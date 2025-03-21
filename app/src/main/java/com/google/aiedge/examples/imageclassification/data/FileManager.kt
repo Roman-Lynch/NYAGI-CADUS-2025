@@ -1,4 +1,5 @@
 import android.content.Context
+import android.util.Log
 import java.io.File
 import org.json.JSONObject
 import java.io.FileOutputStream
@@ -7,14 +8,20 @@ class FileManager(private val context: Context) {
 
 
     fun getOrCreateFile(directoryPath: String, fileName: String, defaultContents: String): File? {
+
+        Log.d("MainActivity", "Attempting to create new file: $fileName")
+
         val directory = File("${context.getExternalFilesDir(null)}/$directoryPath")
         val file = File(directory, fileName)
 
+        Log.d("MainActivity", "file.exists: ${file.exists()}")
+
         if (!file.exists()) {
-            if (file.createNewFile()) return null
+            Log.d("MainActivity", "File does not exist: ${!file.exists()}, so overwriting with default value")
+            if (!file.createNewFile()) return null
+            writeFile(file, defaultContents)
         }
 
-        writeFile(file, defaultContents)
         return file
     }
 
@@ -26,6 +33,7 @@ class FileManager(private val context: Context) {
     }
 
     fun writeFile(file: File, content: String) {
+        Log.d("MainActivity", "Attempting to write file: ${file.name} $content")
         file.writeText(content)
     }
 

@@ -26,10 +26,14 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     val setCurrentPage = { page: Pages -> currentPage = page}
 
     val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
-    var currentLanguage by remember { mutableStateOf(languageSettingsGateway.getSavedLanguage()) }
+    var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = {
         language: Language -> currentLanguage = language
         languageSettingsGateway.setSavedLanguage(language)
+    }
+
+    LaunchedEffect(Unit) {
+        currentLanguage = languageSettingsGateway.getSavedLanguage()
     }
 
     val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
