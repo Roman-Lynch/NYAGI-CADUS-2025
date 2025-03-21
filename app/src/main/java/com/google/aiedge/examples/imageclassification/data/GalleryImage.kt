@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.data
 
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -13,14 +14,22 @@ class GalleryImage(
 ) {
 
     constructor(json: JSONObject) : this(
-        dateString = json.getString("dateString"),
-        timeString = json.getString("timeString"),
-        scanTypeString = json.getString("scanTypeString"),
-        confidence = json.getDouble("confidence"),
-        scanID = UUID.fromString(json.getString("scanID")),
-        patientName = json.getString("patientName")
+        dateString = json.optString("dateString").takeIf { it.isNotEmpty() }
+            ?: throw JSONException("Missing or invalid 'dateString'"),
+        timeString = json.optString("timeString").takeIf { it.isNotEmpty() }
+            ?: throw JSONException("Missing or invalid 'timeString'"),
+        scanTypeString = json.optString("scanTypeString").takeIf { it.isNotEmpty() }
+            ?: throw JSONException("Missing or invalid 'scanTypeString'"),
+        confidence = json.optDouble("confidence", Double.NaN).takeIf { it.isFinite() }
+            ?: throw JSONException("Missing or invalid 'confidence'"),
+        scanID = try {
+            UUID.fromString(json.optString("scanID") ?: throw JSONException("Missing 'scanID'"))
+        } catch (e: IllegalArgumentException) {
+            throw JSONException("Invalid 'scanID' format")
+        },
+        patientName = json.optString("patientName").takeIf { it.isNotEmpty() }
+            ?: throw JSONException("Missing or invalid 'patientName'")
     )
-
 
     fun toJSONObject() {
         JSONObject().apply {

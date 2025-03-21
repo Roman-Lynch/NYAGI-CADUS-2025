@@ -2,29 +2,27 @@ package com.google.aiedge.examples.imageclassification.data;
 
 import FileManager
 import android.content.Context
+import com.google.aiedge.examples.imageclassification.language.Language
 import org.json.JSONObject
 import java.io.File
 
-class Configurations(context: Context) {
+class ConfigurationDoesNotExistException : Exception("Configuration does not exist when fetching from NYAGI configurations.json file")
+class InvalidConfigurationException : Exception("The value for a configuration is not in set of valid values")
 
-    val fileManager: FileManager = FileManager(context)
-    private val configurations: File = File(context.filesDir.absolutePath + "/configurations.json")
+class Configurations(private val context: Context) {
+    private val fileManager: FileManager = FileManager(context)
+
+    private val configurations: File = fileManager.getOrCreateFile("", "configurations.json", getDefaultConfigurations().toString()) ?: throw ConfigurationDoesNotExistException()
 
     init {
-        if (!configurations.exists()) {
-            configurations.createNewFile()
-
-            fileManager.writeJson(configurations, getDefaultConfigurations())
-        }
+        fileManager.writeJson(configurations, getDefaultConfigurations())
     }
 
     private fun getDefaultConfigurations(): JSONObject {
 
-        val defaultConfigurations: JSONObject = JSONObject().apply {
-            put("language", "English")
+        return JSONObject().apply {
+            put("language", Language.English.nativeName)
         }
-
-        return defaultConfigurations
     }
 
     fun getFromConfigurations(key: String, isValid: (String) -> Boolean): String {
@@ -35,7 +33,6 @@ class Configurations(context: Context) {
 
         return value
     }
-
     fun putToConfigurations(key: String, value: String) {
 
         val configurationsJSON: JSONObject = fileManager.readJson(configurations) ?: return
@@ -44,6 +41,3 @@ class Configurations(context: Context) {
         fileManager.writeJson(configurations, configurationsJSON)
     }
 }
-
-class ConfigurationDoesNotExistException : Exception("Configuration does not exist when fetching from NYAGI configurations.json file")
-class InvalidConfigurationException : Exception("The value for a configuration is not in set of valid values")
