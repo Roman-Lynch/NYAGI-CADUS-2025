@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.aiedge.examples.imageclassification
+package com.google.aiedge.examples.imageclassification.legacy
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,6 +23,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.google.aiedge.examples.imageclassification.ImageClassificationHelper
+import com.google.aiedge.examples.imageclassification.Setting
+import com.google.aiedge.examples.imageclassification.UiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

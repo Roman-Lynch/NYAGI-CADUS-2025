@@ -2,7 +2,7 @@ package com.google.aiedge.examples.imageclassification.pages
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import com.google.aiedge.examples.imageclassification.Components.SearchBar
+import com.google.aiedge.examples.imageclassification.components.SearchBar
 import com.google.aiedge.examples.imageclassification.data.GalleryImages
 import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.Language

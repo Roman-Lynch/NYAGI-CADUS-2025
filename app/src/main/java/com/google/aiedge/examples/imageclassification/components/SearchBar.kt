@@ -1,4 +1,4 @@
-package com.google.aiedge.examples.imageclassification.Components
+package com.google.aiedge.examples.imageclassification.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
