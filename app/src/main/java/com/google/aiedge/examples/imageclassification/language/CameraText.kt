@@ -10,7 +10,10 @@ class CameraText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
+
             ),
             arrayOf(
                 "Rotate Screen",
@@ -18,8 +21,10 @@ class CameraText {
                 "Faire pivoter l'écran",
                 "旋转屏幕",
                 "स्क्रीन घुमाएँ",
-                "Girar ecrã",
-                "تدوير الشاشة"
+                "Rodar o ecrã",
+                "تدوير الشاشة",
+                "Rotação da tela",
+                "Putar Layar"
             )
         )
 
@@ -31,16 +36,20 @@ class CameraText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "No Camera Permissions",
                 "Sin permisos de cámara",
-                "Aucune autorisation de caméra",
-                "无相机权限",
+                "Aucune autorisation de l'appareil photo",
+                "无摄像头权限",
                 "कोई कैमरा अनुमति नहीं",
-                "Sem permissões de câmara",
-                "لا توجد أذونات للكاميرا"
+                "Sem permissões para a câmara",
+                "لا توجد أذونات للكاميرا",
+                "Sem permissões de câmera",
+                "Tidak Ada Izin Kamera"
             )
         )
 
@@ -52,16 +61,20 @@ class CameraText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "You need to enable camera permissions in your device's settings to use this page",
-                "Debe habilitar los permisos de la cámara en la configuración de su dispositivo para usar esta página",
+                "Debe habilitar los permisos de la cámara en la configuración de su dispositivo para utilizar esta página",
                 "Vous devez activer les autorisations de l'appareil photo dans les paramètres de votre appareil pour utiliser cette page",
-                "您需要在设备设置中启用相机权限才能使用此页面",
+                "您需要在设备的设置中启用摄像头权限才能使用此页面",
                 "इस पेज का उपयोग करने के लिए आपको अपने डिवाइस की सेटिंग में कैमरा अनुमतियाँ सक्षम करनी होंगी",
-                "Necessita de ativar as permissões da câmara nas definições do seu dispositivo para utilizar esta página",
-                "يجب عليك تمكين أذونات الكاميرا في إعدادات جهازك لاستخدام هذه الصفحة"
+                "É necessário ativar as permissões da câmara nas definições do seu dispositivo para utilizar esta página",
+                "تحتاج إلى تمكين أذونات الكاميرا في إعدادات جهازك لاستخدام هذه الصفحة",
+                "É necessário ativar as permissões da câmera nas configurações do seu dispositivo para usar essa página",
+                "Anda harus mengaktifkan izin kamera dalam pengaturan perangkat Anda untuk menggunakan halaman ini"
             )
         )
     }
