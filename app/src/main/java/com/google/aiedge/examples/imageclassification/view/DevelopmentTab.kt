@@ -13,9 +13,10 @@ import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
+import com.google.aiedge.examples.imageclassification.pages.GalleryPage
 
 enum class Pages {
-    BodyRegions, ScanType, Scan, Settings
+    BodyRegions, ScanType, Scan, Settings, Gallery
 }
 
 @Composable
@@ -25,10 +26,14 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
     val setCurrentPage = { page: Pages -> currentPage = page}
 
     val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
-    var currentLanguage by remember { mutableStateOf(languageSettingsGateway.getSavedLanguage()) }
+    var currentLanguage by remember { mutableStateOf(Language.English) }
     val setLanguage = {
         language: Language -> currentLanguage = language
         languageSettingsGateway.setSavedLanguage(language)
+    }
+
+    LaunchedEffect(Unit) {
+        currentLanguage = languageSettingsGateway.getSavedLanguage()
     }
 
     val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
@@ -54,6 +59,9 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
         }
         Pages.Settings -> {
             SettingsPage(currentLanguage, setLanguage, defaultModifier)
+        }
+        Pages.Gallery -> {
+            GalleryPage(currentLanguage)
         }
     }
 }

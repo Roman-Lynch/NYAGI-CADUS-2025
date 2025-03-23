@@ -1,6 +1,7 @@
 package com.google.aiedge.examples.imageclassification.language
 
 import android.content.Context
+import android.util.Log
 import com.google.aiedge.examples.imageclassification.data.Configurations
 
 
@@ -20,6 +21,8 @@ class LanguageSettingsGateway(private val context: Context) {
     }
 
     fun setSavedLanguage(language: Language) {
+
+        Log.d("MainActivity", "Attempting to set saved language ${language.nativeName}")
 
         configurations.putToConfigurations("language", language.nativeName)
     }

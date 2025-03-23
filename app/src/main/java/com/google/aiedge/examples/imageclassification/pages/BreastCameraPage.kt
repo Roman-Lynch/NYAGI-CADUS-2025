@@ -1,12 +1,9 @@
 package com.google.aiedge.examples.imageclassification.pages
 
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.net.Uri
 import android.content.res.Configuration
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -19,7 +16,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
@@ -37,26 +33,21 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 
 import com.google.aiedge.examples.imageclassification.UiState
-import com.google.aiedge.examples.imageclassification.MainViewModel
-import com.google.aiedge.examples.imageclassification.MainActivity
 import com.google.aiedge.examples.imageclassification.NoCameraPermissionsAlert
+import com.google.aiedge.examples.imageclassification.cameraComponents.CameraPermissionsAlert
 import com.google.aiedge.examples.imageclassification.language.CameraText
 import com.google.aiedge.examples.imageclassification.language.Language
-import com.google.aiedge.examples.imageclassification.view.CameraScreen
-import com.google.aiedge.examples.imageclassification.view.Theme
+import com.google.aiedge.examples.imageclassification.legacy.MainViewModel
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -68,32 +59,9 @@ fun BreastCameraPage(
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy) -> Unit,
 ) {
-    var showAlert by remember { mutableStateOf(true) }
 
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            showAlert = false
-            // Do nothing
-        } else {
-            // Do nothing
-        }
-    }
+    CameraPermissionsAlert(uiState, currentLanguage)
 
-    if (showAlert) NoCameraPermissionsAlert({showAlert = false}, currentLanguage)
-
-    LaunchedEffect(key1 = uiState.errorMessage) {
-        if (ContextCompat.checkSelfPermission(
-                context, android.Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            // Do nothing
-        } else {
-            launcher.launch(android.Manifest.permission.CAMERA)
-        }
-    }
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center

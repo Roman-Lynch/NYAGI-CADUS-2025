@@ -166,12 +166,14 @@ class ImageClassificationHelper(
 
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
 
-                // Log classification results
-                if (categories.isNotEmpty()) {
-                    Log.i(TAG, "Classification complete. Top label: ${categories[0].label}, Score: ${categories[0].score}")
-                } else {
-                    Log.w(TAG, "Category empty")
+                fun logClassificationResults() {
+                    if (categories.isNotEmpty()) {
+                        Log.i(TAG, "Classification complete. Top label: ${categories[0].label}, Score: ${categories[0].score}")
+                    } else {
+                        Log.w(TAG, "Category empty")
+                    }
                 }
+                logClassificationResults()
 
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))
