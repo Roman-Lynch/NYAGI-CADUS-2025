@@ -10,7 +10,9 @@ class HeaderBarText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "Go Back",
@@ -19,7 +21,9 @@ class HeaderBarText {
                 "回去",
                 "वापस जाओ",
                 "Volte",
-                "عُد"
+                "عُد",
+                "Voltar",
+                "Kembali"
             )
         )
     }

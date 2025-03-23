@@ -10,16 +10,20 @@ class GalleryText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "Gallery",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
+                "Galería",
+                "Galerie",
+                "画廊",
+                "गैलरी",
+                "Galeria",
+                "معرض الصور",
+                "Galeria",
+                "Galeri"
             )
         )
     }

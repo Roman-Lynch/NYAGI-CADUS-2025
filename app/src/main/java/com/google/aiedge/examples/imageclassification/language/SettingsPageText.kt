@@ -10,7 +10,9 @@ class SettingsPageText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "Settings",
@@ -19,7 +21,9 @@ class SettingsPageText {
                 "设置",
                 "सेटिंग्स",
                 "Configurações",
-                "إعدادات"
+                "إعدادات",
+                "Configurações",
+                "Pengaturan"
             )
         )
 
@@ -31,7 +35,9 @@ class SettingsPageText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "Language",
@@ -40,7 +46,9 @@ class SettingsPageText {
                 "语言",
                 "भाषा",
                 "Linguagem",
-                "لغة"
+                "لغة",
+                "Idioma",
+                "Bahasa"
             )
         )
     }

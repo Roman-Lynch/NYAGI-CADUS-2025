@@ -10,7 +10,9 @@ class GenericText {
                 Language.Mandarin,
                 Language.Hindi,
                 Language.Portuguese,
-                Language.Arabic
+                Language.Arabic,
+                Language.BrazilianPortuguese,
+                Language.Indonesian,
             ),
             arrayOf(
                 "ok",
@@ -19,7 +21,9 @@ class GenericText {
                 "确定",
                 "ठीक है",
                 "ok",
-                "حسنًا"
+                "حسنًا",
+                "ok",
+                "baiklah"
             )
         )
     }

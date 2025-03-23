@@ -8,6 +8,8 @@ enum class Language(val nativeName: String, val flagPath: String) {
     Hindi("हिन्दी", "Flags/HindiFlag.png"),
     Portuguese("Português", "Flags/PortugueseFlag.png"),
     Arabic("لـَهْجة", "Flags/ArabicFlag.png"),
+    BrazilianPortuguese("Português", "Flags/BrazilianFlag.png"),
+    Indonesian("Indonésio", "Flags/IndonesianFlag.png")
 }
 
 class TextField(keys: Array<Language>, values: Array<String>) {
