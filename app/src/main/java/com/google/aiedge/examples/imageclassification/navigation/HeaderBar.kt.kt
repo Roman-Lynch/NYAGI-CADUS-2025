@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.language.HeaderBarText
@@ -26,12 +27,12 @@ fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel) {
         HeaderBarButton(
             filePath = "Icons/BackIcon.png",
             onClick = { mainViewModel.popPage() },
-            semanticsLabel = HeaderBarText.backButtonLabel.get(currentLanguage)
+            semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
         )
         HeaderBarButton(
             filePath = "Icons/GearIcon.png",
             onClick = { mainViewModel.pushPage(Pages.Settings) },
-            semanticsLabel = SettingsPageText.title.get(currentLanguage)
+            semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
         )
     }
 }

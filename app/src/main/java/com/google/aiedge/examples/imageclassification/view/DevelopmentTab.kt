@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.view
 
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -25,16 +26,18 @@ fun DevelopmentScreen(
 ) {
 
     val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
-    var currentLanguage by rememberSaveable { mutableStateOf(Language.English) }
-    val setLanguage = {
-        language: Language -> currentLanguage = language
+    var currentLanguage by remember { mutableStateOf(Language.ENGLISH) }
+    val setLanguage: (Language) -> Unit = { language ->
+        currentLanguage = language
         languageSettingsGateway.setSavedLanguage(language)
+        Log.d("LanguageDebug", "Language set: ${language.name}")
     }
 
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         currentLanguage = languageSettingsGateway.getSavedLanguage()
+        Log.d("LanguageDebug", "Language loaded: ${currentLanguage.name}")
     }
 
     HeaderBar(currentLanguage, mainViewModel)

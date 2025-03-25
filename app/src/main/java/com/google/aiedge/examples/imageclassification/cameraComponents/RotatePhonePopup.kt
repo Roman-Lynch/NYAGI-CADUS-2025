@@ -48,7 +48,7 @@ fun RotatePhonePopup(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = CameraText.rotateScreen.get(currentLanguage),
+            text = CameraText.getRotateScreenText(LocalContext.current, currentLanguage),
             modifier = Modifier.align(Alignment.BottomCenter).padding(5.dp),
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,
