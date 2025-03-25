@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.aiedge.examples.imageclassification.legacy
+package com.google.aiedge.examples.imageclassification
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.camera.core.ImageProxy
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.google.aiedge.examples.imageclassification.ImageClassificationHelper
-import com.google.aiedge.examples.imageclassification.Setting
-import com.google.aiedge.examples.imageclassification.UiState
+import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
+import com.google.aiedge.examples.imageclassification.navigation.Pages
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,6 +43,13 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
                 return MainViewModel(imageClassificationHelper) as T
             }
         }
+    }
+
+    private val _rerenderCounter = MutableStateFlow(0) // Initial value is 0
+    val rerenderCounter: StateFlow<Int> get() = _rerenderCounter
+
+    private fun rerender() {
+        _rerenderCounter.value += 1
     }
 
     private var classificationJob: Job? = null
@@ -72,6 +77,9 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
         }
     }
 
+    private val _navigationStack = MutableLiveData<NavigationStack>()
+    val navigationStack: LiveData<NavigationStack> get() = _navigationStack
+
     val uiState: StateFlow<UiState> = combine(
         imageClassificationHelper.classification
             .stateIn(
@@ -90,6 +98,10 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState())
 
+
+    init {
+        _navigationStack.value = NavigationStack(Pages.BodyRegions)
+    }
 
     /** Start classify an image.
      *  @param imageProxy contain `imageBitMap` and imageInfo as `image rotation degrees`.
@@ -153,5 +165,31 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
     /** Clear error message after it has been consumed*/
     fun errorMessageShown() {
         errorMessage.update { null }
+    }
+
+    fun pushPage(page: Pages) {
+
+        Log.d("MainActivity", "Attempted to navigate forward")
+
+        _navigationStack.value?.push(page)
+        _navigationStack.value = _navigationStack.value
+        rerender()
+    }
+
+    fun popPage() {
+
+        Log.d("MainActivity", "Attempted to navigate backward")
+
+        _navigationStack.value?.pop()
+        _navigationStack.value = _navigationStack.value
+        rerender()
+    }
+
+    fun isStackEmpty(): Boolean {
+        return _navigationStack.value?.isEmpty() ?: true
+    }
+
+    fun getCurrentPage(): Pages {
+        return _navigationStack.value!!.getCurrentPage()
     }
 }

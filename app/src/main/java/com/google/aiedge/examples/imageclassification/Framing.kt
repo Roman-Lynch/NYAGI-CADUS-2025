@@ -6,7 +6,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.legacy.DebugPanel
-import com.google.aiedge.examples.imageclassification.legacy.MainViewModel
 import com.google.aiedge.examples.imageclassification.view.ApplicationTheme
 
 @Composable

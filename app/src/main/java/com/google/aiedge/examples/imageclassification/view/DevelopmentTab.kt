@@ -4,27 +4,26 @@ import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.google.aiedge.examples.imageclassification.UiState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.language.LanguageSettingsGateway
 import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
-import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
+import com.google.aiedge.examples.imageclassification.navigation.Pages
 import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
 import com.google.aiedge.examples.imageclassification.pages.GalleryPage
 
-enum class Pages {
-    BodyRegions, ScanType, Scan, Settings, Gallery
-}
-
 @Composable
-fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Unit) {
-
-    var currentPage by remember { mutableStateOf(Pages.BodyRegions) }
-    val setCurrentPage = { page: Pages -> currentPage = page }
+fun DevelopmentScreen(
+    onImageProxyAnalyzed: (ImageProxy) -> Unit,
+    mainViewModel: MainViewModel,
+) {
 
     val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
     var currentLanguage by remember { mutableStateOf(Language.ENGLISH) }
@@ -34,35 +33,36 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
         Log.d("LanguageDebug", "Language set: ${language.name}")
     }
 
+    val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         currentLanguage = languageSettingsGateway.getSavedLanguage()
         Log.d("LanguageDebug", "Language loaded: ${currentLanguage.name}")
     }
 
-    val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions)) }
-
-    HeaderBar(navigationStack, currentLanguage)
+    HeaderBar(currentLanguage, mainViewModel)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
-    when (currentPage) {
+    val rerenderCounter by mainViewModel.rerenderCounter.collectAsStateWithLifecycle()
+
+    if (rerenderCounter >= 0) when (mainViewModel.getCurrentPage()) {
         Pages.BodyRegions -> {
-            BodyRegionsPage(currentLanguage, defaultModifier, navigationStack)
+            BodyRegionsPage(currentLanguage, defaultModifier, mainViewModel)
         }
         Pages.ScanType -> {
 
         }
         Pages.Scan -> {
             BreastCameraPage(
-                uiState,
-                currentLanguage,
+                uiState = uiState,
+                currentLanguage = currentLanguage,
                 modifier = Modifier.fillMaxWidth(),
                 onImageAnalyzed = onImageProxyAnalyzed,
             )
         }
         Pages.Settings -> {
-            // Pass currentLanguage and setLanguage separately, and include the Modifier
-            SettingsPage(currentLanguage = currentLanguage, setLanguage = setLanguage, modifier = defaultModifier)
+            SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
         Pages.Gallery -> {
             GalleryPage(currentLanguage)

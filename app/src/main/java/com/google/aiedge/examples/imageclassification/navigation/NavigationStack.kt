@@ -1,26 +1,33 @@
 package com.google.aiedge.examples.imageclassification.navigation
 
-class NavigationStack<PageType: Enum<PageType>>(private val setPageOnChange: (PageType) -> Unit, private val defaultPage: PageType) {
+enum class Pages {
+    BodyRegions, ScanType, Scan, Settings, Gallery
+}
 
-    private val stack: ArrayDeque<PageType> = ArrayDeque()
+class NavigationStack(
+    private val defaultPage: Pages
+) {
 
-    fun push(value: PageType) {
+    private var currentPage = defaultPage
+    private val stack: ArrayDeque<Pages> = ArrayDeque()
 
-        if (!stack.isEmpty() && value == stack.last()) return
-
+    fun push(value: Pages) {
+        if (stack.isNotEmpty() && value == stack.last()) return
         stack.add(value)
-        setPageOnChange(value)
+        currentPage = value
     }
 
     fun pop() {
         if (stack.size > 1) {
             stack.removeLast()
-            setPageOnChange(stack.last())
+            currentPage = stack.last()
             return
         }
         if (stack.size == 1) stack.removeLast()
-        setPageOnChange(defaultPage)
+        currentPage = defaultPage
     }
 
     fun isEmpty() = stack.isEmpty()
+
+    fun getCurrentPage(): Pages { return currentPage }
 }
