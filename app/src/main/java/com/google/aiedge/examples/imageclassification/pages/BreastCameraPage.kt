@@ -99,6 +99,7 @@ fun orientation(
     optionName: String,
     currentLanguage: Language
 ) {
+    val context = LocalContext.current
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data("file:///android_asset/Icons/${optionName}.png")
@@ -117,7 +118,7 @@ fun orientation(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = CameraText.rotateScreen.get(currentLanguage),
+            text = CameraText.getRotateScreenText(context, currentLanguage),
             modifier = Modifier.align(Alignment.BottomCenter).padding(5.dp),
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,

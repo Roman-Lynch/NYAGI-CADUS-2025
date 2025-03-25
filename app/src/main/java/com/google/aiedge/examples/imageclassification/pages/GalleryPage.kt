@@ -11,11 +11,12 @@ import com.google.aiedge.examples.imageclassification.view.TextHeader
 @Composable
 fun GalleryPage(currentLanguage: Language) {
 
+    val context = LocalContext.current
     var searchText: String by remember { mutableStateOf("") }
     fun setSearchText(newText: String) { searchText = newText }
 
     var galleryImages: GalleryImages = GalleryImages(LocalContext.current)
 
-    TextHeader(GalleryText.gallery.get(currentLanguage))
+    TextHeader(GalleryText.getGalleryText(context, currentLanguage))
     SearchBar(searchText, ::setSearchText)
 }
