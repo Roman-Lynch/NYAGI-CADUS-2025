@@ -24,8 +24,11 @@ class TextField(private val context: Context, private val language: Language) {
 
     // Apply the selected language to context
     private fun applyLocale(context: Context, locale: Locale): Context {
+        val supportedLocales = Language.entries.map { it.locale.language }
+        val resolvedLocale = if (supportedLocales.contains(locale.language)) locale else Locale("en")
+
         val configuration = Configuration(context.resources.configuration)
-        configuration.setLocale(locale)
+        configuration.setLocale(resolvedLocale)
         return context.createConfigurationContext(configuration)
     }
 
