@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Image Classification</string>
+    <string name="inference_title">Inference Time</string>
+    <string name="inference_value">%d ms</string>
+    <string name="delegate">Delegate</string>
+    <string name="threshold">Threshold</string>
+    <string name="maxResult">Max Results</string>
+    <string name="gallery">画廊</string>
+    <string name="ok">确定</string>
+    <string name="go_back">回去</string>
+    <string name="settings">设置</string>
+    <string name="language">语言</string>
+    <string name="rotate_screen">旋转屏幕</string>
+    <string name="no_camera_permissions">无摄像头权限</string>
+    <string name="enable_camera_permissions_alert">您需要在设备的设置中启用摄像头权限才能使用此页面</string>
+</resources>

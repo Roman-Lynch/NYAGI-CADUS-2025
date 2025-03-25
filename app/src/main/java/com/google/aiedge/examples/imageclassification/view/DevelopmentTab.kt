@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.view
 
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -23,20 +24,22 @@ enum class Pages {
 fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Unit) {
 
     var currentPage by remember { mutableStateOf(Pages.BodyRegions) }
-    val setCurrentPage = { page: Pages -> currentPage = page}
+    val setCurrentPage = { page: Pages -> currentPage = page }
 
     val languageSettingsGateway = LanguageSettingsGateway(LocalContext.current)
-    var currentLanguage by remember { mutableStateOf(Language.English) }
-    val setLanguage = {
-        language: Language -> currentLanguage = language
+    var currentLanguage by remember { mutableStateOf(Language.ENGLISH) }
+    val setLanguage: (Language) -> Unit = { language ->
+        currentLanguage = language
         languageSettingsGateway.setSavedLanguage(language)
+        Log.d("LanguageDebug", "Language set: ${language.name}")
     }
 
     LaunchedEffect(Unit) {
         currentLanguage = languageSettingsGateway.getSavedLanguage()
+        Log.d("LanguageDebug", "Language loaded: ${currentLanguage.name}")
     }
 
-    val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions))}
+    val navigationStack by remember { mutableStateOf(NavigationStack(setCurrentPage, Pages.BodyRegions)) }
 
     HeaderBar(navigationStack, currentLanguage)
 
@@ -58,7 +61,8 @@ fun DevelopmentScreen(uiState: UiState, onImageProxyAnalyzed: (ImageProxy) -> Un
             )
         }
         Pages.Settings -> {
-            SettingsPage(currentLanguage, setLanguage, defaultModifier)
+            // Pass currentLanguage and setLanguage separately, and include the Modifier
+            SettingsPage(currentLanguage = currentLanguage, setLanguage = setLanguage, modifier = defaultModifier)
         }
         Pages.Gallery -> {
             GalleryPage(currentLanguage)

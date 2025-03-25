@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -31,35 +32,37 @@ import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
 fun SettingsPage(
-    currentLanguage: Language = Language.English,
-    setLanguage: (Language) -> Unit = {},
-    modifier: Modifier
+    currentLanguage: Language,  // Language parameter
+    setLanguage: (Language) -> Unit, // Function to set language
+    modifier: Modifier = Modifier  // Modifier for layout and styling
 ) {
+    val context = LocalContext.current
 
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .height(1000.dp)
     ) {
-        TextHeader(SettingsPageText.title.get(currentLanguage))
+        // Update settings text with the current language
+        TextHeader(SettingsPageText.getSettings(context, currentLanguage))
 
         // language selection
-        SettingsSectionTitle(SettingsPageText.language.get(currentLanguage), "LanguageIcon")
-        FlagsPanel(currentLanguage, setLanguage)
+        SettingsSectionTitle(SettingsPageText.getLanguage(context, currentLanguage), "LanguageIcon")
+        FlagsPanel(currentLanguage, setLanguage = setLanguage)  // Directly pass setLanguage
 
         Spacer(modifier = Modifier.height(30.dp))
 
         // about section
         SettingsSectionTitle("About", "Info")
-        Row{
+        Row {
             Text("Version: ")
-            Text("1.1.0-alpha",
-                fontWeight = FontWeight.Bold)
+            Text("1.1.0-alpha", fontWeight = FontWeight.Bold)
         }
         // about page button
         AboutPageButton()
     }
 }
+
 @Preview
 @Composable
 fun AboutPageButton(){
@@ -104,8 +107,8 @@ fun SettingsSectionTitle(
 @Preview
 @Composable
 fun LanguageIcon(
-    language: Language = Language.English,
-    currentLanguage: Language = Language.English,
+    language: Language = Language.ENGLISH,
+    currentLanguage: Language = Language.ENGLISH,
     setCurrentLanguage: (Language) -> Unit = {}
 ) {
 

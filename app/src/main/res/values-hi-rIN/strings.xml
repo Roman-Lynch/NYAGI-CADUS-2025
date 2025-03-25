@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Image Classification</string>
+    <string name="inference_title">Inference Time</string>
+    <string name="inference_value">%d ms</string>
+    <string name="delegate">Delegate</string>
+    <string name="threshold">Threshold</string>
+    <string name="maxResult">Max Results</string>
+    <string name="gallery">गैलरी</string>
+    <string name="ok">ठीक है</string>
+    <string name="go_back">वापस जाओ</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="language">भाषा</string>
+    <string name="rotate_screen">स्क्रीन घुमाएँ</string>
+    <string name="no_camera_permissions">कोई कैमरा अनुमति नहीं</string>
+    <string name="enable_camera_permissions_alert">इस पेज का उपयोग करने के लिए आपको अपने डिवाइस की सेटिंग में कैमरा अनुमतियाँ सक्षम करनी होंगी</string>
+</resources>

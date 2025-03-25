@@ -18,7 +18,7 @@ class Configurations(private val context: Context) {
     private fun getDefaultConfigurations(): JSONObject {
 
         return JSONObject().apply {
-            put("language", Language.English.nativeName)
+            put("language", Language.ENGLISH.nativeName)
         }
     }
 

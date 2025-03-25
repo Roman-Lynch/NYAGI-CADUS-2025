@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.language.HeaderBarText
 import com.google.aiedge.examples.imageclassification.language.Language
@@ -15,6 +16,8 @@ import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
 fun HeaderBar(navigationStack: NavigationStack<Pages>, currentLanguage: Language) {
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .background(Theme.Teal)
@@ -27,12 +30,12 @@ fun HeaderBar(navigationStack: NavigationStack<Pages>, currentLanguage: Language
         HeaderBarButton(
             filePath = "Icons/BackIcon.png",
             onClick = {navigationStack.pop()},
-            semanticsLabel = HeaderBarText.backButtonLabel.get(currentLanguage)
+            semanticsLabel = HeaderBarText.getGoBack(context, currentLanguage)
         )
         HeaderBarButton(
             filePath = "Icons/GearIcon.png",
             onClick = { navigationStack.push(Pages.Settings) },
-            semanticsLabel = SettingsPageText.title.get(currentLanguage)
+            semanticsLabel = SettingsPageText.getSettings(context, currentLanguage)
         )
     }
 }

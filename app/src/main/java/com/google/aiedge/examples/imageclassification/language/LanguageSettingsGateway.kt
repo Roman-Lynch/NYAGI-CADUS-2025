@@ -17,7 +17,7 @@ class LanguageSettingsGateway(private val context: Context) {
 
         val languageName = configurations.getFromConfigurations("language", ::isValidValue)
 
-        return Language.entries.find { it.nativeName == languageName } ?: Language.English
+        return Language.entries.find { it.nativeName == languageName } ?: Language.ENGLISH
     }
 
     fun setSavedLanguage(language: Language) {

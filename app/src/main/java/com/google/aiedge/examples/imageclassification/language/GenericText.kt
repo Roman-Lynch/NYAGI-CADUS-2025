@@ -1,30 +1,31 @@
-package com.google.aiedge.examples.imageclassification.language;
+package com.google.aiedge.examples.imageclassification.language
+
+import android.content.Context
 
 class GenericText {
     companion object {
-        val ok = TextField(
-            arrayOf(
-                Language.English,
-                Language.Spanish,
-                Language.French,
-                Language.Mandarin,
-                Language.Hindi,
-                Language.Portuguese,
-                Language.Arabic,
-                Language.BrazilianPortuguese,
-                Language.Indonesian,
-            ),
-            arrayOf(
-                "ok",
-                "ok",
-                "ok",
-                "确定",
-                "ठीक है",
-                "ok",
-                "حسنًا",
-                "ok",
-                "baiklah"
-            )
-        )
+        // Define a function to create the TextField for different languages
+        fun createTextFieldForLanguage(context: Context): Map<Language, TextField> {
+            val languages = Language.values()
+            val textFields = mutableMapOf<Language, TextField>()
+
+            // Create a TextField for each supported language using context for resource access
+            for (language in languages) {
+                textFields[language] = TextField(context, language)
+            }
+            return textFields
+        }
+
+        // Example of how you can get a TextField for a specific language:
+        fun getLocalizedTextField(context: Context, language: Language): TextField {
+            val textFields = createTextFieldForLanguage(context)
+            return textFields[language] ?: error("Language not found")
+        }
+
+        // Now use the TextField to retrieve localized strings for the specific language:
+        fun getOkText(context: Context, language: Language): String {
+            val textField = getLocalizedTextField(context, language)
+            return textField.get("ok")
+        }
     }
 }

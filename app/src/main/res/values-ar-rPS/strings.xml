@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Image Classification</string>
+    <string name="inference_title">Inference Time</string>
+    <string name="inference_value">%d ms</string>
+    <string name="delegate">Delegate</string>
+    <string name="threshold">Threshold</string>
+    <string name="maxResult">Max Results</string>
+    <string name="gallery">معرض الصور</string>
+    <string name="ok">حسنًا</string>
+    <string name="go_back">عُد</string>
+    <string name="settings">إعدادات</string>
+    <string name="language">لغة</string>
+    <string name="rotate_screen">تدوير الشاشة</string>
+    <string name="no_camera_permissions">لا توجد أذونات للكاميرا</string>
+    <string name="enable_camera_permissions_alert">تحتاج إلى تمكين أذونات الكاميرا في إعدادات جهازك لاستخدام هذه الصفحة</string>
+</resources>

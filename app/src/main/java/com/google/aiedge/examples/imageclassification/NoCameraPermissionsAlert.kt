@@ -9,6 +9,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.language.CameraText
 import com.google.aiedge.examples.imageclassification.language.GenericText
@@ -17,10 +18,11 @@ import com.google.aiedge.examples.imageclassification.language.Language
 @Composable
 fun NoCameraPermissionsAlert(onClick: () -> Unit, currentLanguage: Language) {
 
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = {},
-        title = { Text(CameraText.noPermissionsTitle.get(currentLanguage)) },
-        text = { Text(CameraText.noPermissionsBody.get(currentLanguage)) },
+        title = { Text(CameraText.getRotateScreenText(context, currentLanguage)) },
+        text = { Text(CameraText.getNoCameraPermissionsText(context, currentLanguage)) },
         buttons = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally, // Optional: Centers the buttons horizontally
@@ -28,7 +30,7 @@ fun NoCameraPermissionsAlert(onClick: () -> Unit, currentLanguage: Language) {
                 modifier = Modifier.padding(16.dp) // Optional: Adds padding around the column
             ) {
                 TextButton(onClick = onClick) {
-                    Text(GenericText.ok.get(currentLanguage))
+                    Text(GenericText.getOkText(context, currentLanguage))
                 }
             }
         }
