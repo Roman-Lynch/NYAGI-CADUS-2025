@@ -53,6 +53,7 @@ class ImageClassificationHelper(
     class Options(
         /** The enum contains the model file name, relative to the assets/ directory */
         var model: Model = DEFAULT_MODEL,
+        var QaModel: QaModel = DEFAULT_QA_MODEL,
         /** The delegate for running computationally intensive operations*/
         var delegate: Delegate = DEFAULT_DELEGATE,
         /** Number of output classes of the TFLite model.  */
@@ -71,6 +72,7 @@ class ImageClassificationHelper(
         private const val TAG = "ImageClassification"
 
         val DEFAULT_MODEL = Model.EfficientNet
+        val DEFAULT_QA_MODEL = QaModel.QaYOLO
         val DEFAULT_DELEGATE = Delegate.CPU
         const val DEFAULT_RESULT_COUNT = 1
 
@@ -113,11 +115,20 @@ class ImageClassificationHelper(
         extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
+    /* RUN QaModel.tflite
+        The same as classification but for YOLO 11 Seg Model */
+    val QaClassification: SharedFlow<QaResults>
+        get() = _QaClassification
+    private val _QaClassification = MutableSharedFlow<QaResults>(
+        extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
     val error: SharedFlow<Throwable?>
         get() = _error
     private val _error = MutableSharedFlow<Throwable?>()
 
     private var interpreter: Interpreter? = null
+    private var qa_interpreter: Interpreter? = null
     private lateinit var labels: List<String>
 
     /** Init a Interpreter from [Model] with [Delegate]*/
@@ -142,15 +153,77 @@ class ImageClassificationHelper(
         }
     }
 
+    /* RUN QaModel.tflite
+        The same as initClassifier but for YOLO 11 Seg Model */
+    suspend fun initQaClassifier() {
+        qa_interpreter = try {
+            val litertBuffer = FileUtil.loadMappedFile(context, options.QaModel.fileName)
+            Log.i(TAG, "Done creating TFLite buffer from ${options.QaModel.fileName}")
+            val options = Interpreter.Options().apply {
+                numThreads = options.threadCount
+                useNNAPI = options.delegate == Delegate.NNAPI
+            }
+            labels = loadLabels(context)
+
+            /* THIS CURRENTLY DOESN'T WORK*/
+            /*labels = getModelMetadata(litertBuffer)*/
+
+            Interpreter(litertBuffer, options)
+        } catch (e: Exception) {
+            Log.i(TAG, "Create TFLite from ${options.QaModel.fileName} is failed ${e.message}")
+            _error.emit(e)
+            null
+        }
+    }
+
     fun setOptions(options: Options) {
         this.options = options
     }
 
-    suspend fun classify(imageProxy: ImageProxy, context: Context, scanType: String) {
+    /* RUN QaModel.tflite
+        The same as classify but for YOLO 11 Seg Model */
+    suspend fun run_QA(bitmap: Bitmap, rotationDegrees: Int) {
+        try {
+            withContext(Dispatchers.IO) {
+                if (qa_interpreter == null) return@withContext
+                val startTime = SystemClock.uptimeMillis()
 
-        val bitmap: Bitmap = imageProxy.toBitmap()
-        val rotationDegrees: Int = imageProxy.imageInfo.rotationDegrees
+                val rotation = -rotationDegrees / 90
+                val (_, h, w, _) = qa_interpreter?.getInputTensor(0)?.shape() ?: return@withContext
+                val imageProcessor =
+                    ImageProcessor.Builder().add(ResizeOp(h, w, ResizeOp.ResizeMethod.BILINEAR))
+                        .add(Rot90Op(rotation)).add(NormalizeOp(127.5f, 127.5f)).build()
 
+                // Preprocess the image and convert it into a TensorImage for classification.
+                val tensorImage = imageProcessor.process(TensorImage.fromBitmap(bitmap))
+                val output = runQaWithTFLite(tensorImage)
+
+                val box = output.map {
+                    QaBox(x_1 = output[0], x_2 = output[1], y_1 =output[2], y_2 =output[3])
+                }.take(options.resultCount)
+
+                val inferenceTime = SystemClock.uptimeMillis() - startTime
+
+                fun logQaResults() {
+                    if (box.isNotEmpty()) {
+                        Log.i(TAG, "QA Classification Complete complete. Box: ${box}")
+                    } else {
+                        Log.w(TAG, "Category empty")
+                    }
+                }
+                logQaResults()
+
+                if (isActive) {
+                    _QaClassification.emit(QaResults(box, inferenceTime))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "QA classification error occurred: ${e.message}", e)
+            _error.emit(e)
+        }
+    }
+
+    suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap, rotationDegrees: Int, context: Context, scanType: String)) {
         try {
             withContext(Dispatchers.IO) {
                 if (interpreter == null) return@withContext
@@ -216,6 +289,32 @@ class ImageClassificationHelper(
         }
     }
 
+    /* RUN QaModel.tflite
+        The same as classifyWithTFLite but for YOLO 11 Seg Model */
+    private fun runQaWithTFLite(tensorImage: TensorImage): FloatArray {
+        val outputShape = qa_interpreter!!.getOutputTensor(0).shape()
+        val outputBuffer = FloatBuffer.allocate(outputShape.reduce { acc, i -> acc * i })
+
+        outputBuffer.rewind()
+        qa_interpreter?.run(tensorImage.tensorBuffer.buffer, outputBuffer)
+        outputBuffer.rewind()
+        var output = FloatArray(outputBuffer.capacity())
+        outputBuffer.get(output)
+
+        val numClasses = 32 // Update this based on your model
+        val bestDetection = YoloSegProcessor.getHighestConfidenceDetection(output, numClasses)
+
+        Log.d("YOLO Output", "First 20 values: ${output.take(20).joinToString()}")
+        Log.i(TAG, "YOLO detection output ${bestDetection}")
+
+        if (bestDetection != null) {
+            return bestDetection.bbox
+        }
+        else {
+            return FloatArray(0)
+        }
+    }
+
     private fun classifyWithTFLite(tensorImage: TensorImage): FloatArray {
         val outputShape = interpreter!!.getOutputTensor(0).shape()
         val outputBuffer = FloatBuffer.allocate(outputShape.reduce { acc, i -> acc * i })
@@ -272,9 +371,19 @@ class ImageClassificationHelper(
         EfficientNet2("efficientnet_lite2.tflite"), EfficientNet("effecientnet.tflite"), ResNet("resnet_model.tflite"), ResNetKR("resnetkr.tflite");
     }
 
+    enum class QaModel(val fileName: String) {
+        QaYOLO("QaModel.tflite");
+    }
+
+    data class QaResults(
+        val box: List<QaBox>, val inferenceTime: Long
+    )
+
     data class ClassificationResult(
         val categories: List<Category>, val inferenceTime: Long
     )
 
     data class Category(val label: String, val score: Float)
+
+    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float)
 }

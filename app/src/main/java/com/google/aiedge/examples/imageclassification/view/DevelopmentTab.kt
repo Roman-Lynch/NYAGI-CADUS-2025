@@ -33,6 +33,7 @@ fun DevelopmentScreen(
     }
 
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+    val uiStateQa by mainViewModel.uiStateQa.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         currentLanguage = languageSettingsGateway.getSavedLanguage()
@@ -55,6 +56,7 @@ fun DevelopmentScreen(
         Pages.Scan -> {
             BreastCameraPage(
                 uiState = uiState,
+                uiStateQa = uiStateQa,
                 currentLanguage = currentLanguage,
                 modifier = Modifier.fillMaxWidth(),
                 onImageAnalyzed = onImageProxyAnalyzed,

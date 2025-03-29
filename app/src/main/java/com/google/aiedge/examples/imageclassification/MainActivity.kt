@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
 
             fun onImageProxyAnalyzed(imageProxy: ImageProxy, context: Context, scanType: String) {
                 viewModel.classify(imageProxy, context, scanType)
+                viewModel.run_QA(imageProxy)
             }
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()

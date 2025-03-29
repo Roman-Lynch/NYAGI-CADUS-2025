@@ -26,6 +26,16 @@ class UiState(
     val errorMessage: String? = null,
 )
 
+/* RUN QaModel.tflite
+        The same as UiState but for YOLO 11 Seg Model */
+@Immutable
+class UiStateQa(
+    val inferenceTime: Long = 0L,
+    val QaBox: List<ImageClassificationHelper.QaBox> = emptyList(),
+    val setting: Setting = Setting(),
+    val errorMessage: String? = null,
+)
+
 @Immutable
 data class Setting(
     val model: ImageClassificationHelper.Model = ImageClassificationHelper.DEFAULT_MODEL,

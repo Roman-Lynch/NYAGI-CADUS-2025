@@ -67,6 +67,7 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
                         )
                     )
                     imageClassificationHelper.initClassifier()
+                    imageClassificationHelper.initQaClassifier()
                 }
             }
         }
@@ -98,6 +99,24 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState())
 
+    /* RUN QaModel.tflite
+        The same as uiState but for YOLO 11 Seg Model */
+    val uiStateQa: StateFlow<UiStateQa> = combine(
+        imageClassificationHelper.QaClassification
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                ImageClassificationHelper.QaResults(emptyList(), 0L)
+            ),
+        setting.filterNotNull(),
+        errorMessage,
+    ) { result, setting, error ->
+        UiStateQa(
+            QaBox = result.box,
+            setting = setting,
+            errorMessage = error?.message
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiStateQa())
 
     init {
         _navigationStack.value = NavigationStack(Pages.BodyRegions)
@@ -110,11 +129,35 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
     fun classify(imageProxy: ImageProxy, context: Context, scanType: String) {
         classificationJob = viewModelScope.launch {
             imageClassificationHelper.classify(
+                bitmap = imageProxy.toBitmap(),
+                rotationDegrees = imageProxy.imageInfo.rotationDegrees,
                 imageProxy = imageProxy,
                 context = context,
                 scanType = scanType
             )
             imageProxy.close()
+        }
+    }
+
+    fun run_QA(imageProxy: ImageProxy) {
+        classificationJob = viewModelScope.launch {
+            imageClassificationHelper.run_QA(
+                imageProxy.toBitmap(),
+                imageProxy.imageInfo.rotationDegrees,
+            )
+            imageProxy.close()
+        }
+    }
+
+    /** Start classify an image.
+     *  @param bitmap Tries to make a new bitmap based on the dimensions of this bitmap,
+     *  setting the new bitmap's config to Bitmap.Config.ARGB_8888
+     *  @param rotationDegrees to correct the rotationDegrees during classification
+     */
+    fun classify(bitmap: Bitmap, rotationDegrees: Int) {
+        viewModelScope.launch {
+            val argbBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+            imageClassificationHelper.classify(argbBitmap, rotationDegrees)
         }
     }
 
