@@ -19,6 +19,7 @@ import com.google.aiedge.examples.imageclassification.cameraComponents.ColoredCa
 import com.google.aiedge.examples.imageclassification.cameraComponents.RotatePhonePopup
 import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.Language
+import kotlin.math.absoluteValue
 
 @Composable
 fun BreastCameraPage(
@@ -48,9 +49,18 @@ fun BreastCameraPage(
         val categories = uiState.categories
         val qa_box = uiStateQa.QaBox
 
+        var box = false
+        var width = 0f
+        var height = 0f
+        var boundingbox = FloatArray(0)
+
         // LOG QA Box Response
         if (!qa_box.isEmpty()) {
             Log.d("QA BOX", "QA BOX output: [${qa_box[0].x_1}, ${qa_box[0].x_2}, ${qa_box[0].y_1}, ${qa_box[0].y_2}]")
+            width = (qa_box[0].x_2 - qa_box[0].x_1).absoluteValue
+            height = (qa_box[0].y_2 - qa_box[0].y_1).absoluteValue
+            box = true
+            boundingbox = listOf(qa_box[0].x_1, qa_box[0].y_1, qa_box[0].x_2, qa_box[0].y_2).toFloatArray()
         } else {
             Log.d("QA BOX", "QA BOX output is empty")
         }
@@ -64,11 +74,11 @@ fun BreastCameraPage(
             }
         }
         if (highestScore > .0f) { // change when on phone
-            if (highestCategory == "benign") {
-                ColoredCameraBorder(Color.Green)
+            if (highestCategory == "benign" && box){
+                ColoredCameraBorder(Color.Green, canvasWidth = width, canvasHeight = height, bbox = boundingbox)
             }
-            if (highestCategory == "malignant") {
-                ColoredCameraBorder(Color.Red)
+            if (highestCategory == "malignant" && box) {
+                ColoredCameraBorder(Color.Red, canvasWidth = width, canvasHeight = height, bbox = boundingbox)
             }
         }
         val configuration = LocalConfiguration.current

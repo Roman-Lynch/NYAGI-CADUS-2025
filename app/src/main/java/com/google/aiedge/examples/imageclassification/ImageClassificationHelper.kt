@@ -308,10 +308,24 @@ class ImageClassificationHelper(
         Log.i(TAG, "YOLO detection output ${bestDetection}")
 
         if (bestDetection != null) {
-            return bestDetection.bbox
-        }
-        else {
-            return FloatArray(0)
+            val bbox = bestDetection.bbox // YOLO output is normalized or relative to model input size
+            val modelInputSize = 640f // YOLO input size (assumed 640x640)
+
+            val originalHeight = tensorImage.height
+            val originalWidth = tensorImage.width
+
+
+            // Scale bounding box coordinates back to original image size
+            val scaledBBox = floatArrayOf(
+                bbox[0] * originalWidth,  // x_min
+                bbox[1] * originalHeight, // y_min
+                bbox[2] * originalWidth,  // x_max
+                bbox[3] * originalHeight  // y_max
+            )
+
+            return scaledBBox
+        } else {
+            return FloatArray(0) // Return empty if no detection
         }
     }
 

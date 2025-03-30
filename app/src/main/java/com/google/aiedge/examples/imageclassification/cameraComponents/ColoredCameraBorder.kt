@@ -12,10 +12,14 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.absoluteValue
 
 @Composable
 fun ColoredCameraBorder(
-    color: Color
+    color: Color,
+    canvasWidth: Float,
+    canvasHeight: Float,
+    bbox: FloatArray? // Expecting [x1, y1, x2, y2]
 ) {
     Box(
         modifier = Modifier
@@ -26,21 +30,23 @@ fun ColoredCameraBorder(
             .drawWithContent {
                 drawContent()
 
-                val canvasWidth = size.width
-                val canvasHeight = size.height
+                // Draw the bounding box only if bbox is provided
+                    // IN THIS CASE, X is Y
+                if (bbox != null && bbox.size == 4) {
+                    val x1 = bbox[1]
+                    val y1 = bbox[0]
+                    val x2 = bbox[3]
+                    val y2 = bbox[2]
+                    val topLeftX = x1 - (x2 - x1) / 2
+                    val topLeftY = y1 - (y2 - y1) / 2
 
-
-                val width = canvasWidth * .9f
-                val height = canvasHeight * .95f
-                drawRect(
-                    color = Color(0xFFFFFFFF),
-                    topLeft = Offset(x = (canvasWidth - width) / 2, y = (canvasHeight - height) / 2),
-                    size = Size(width, height),
-                    blendMode = BlendMode.DstOut
-                )
+                    drawRect(
+                        color = color, // Color should be passed from the caller
+                        topLeft = Offset(topLeftX, topLeftY),
+                        size = Size(x2 - x1, y2 - y1),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f) // Outline only
+                    )
+                }
             }
-            .background(color.copy(alpha = 0.3f))
-    ) {
-
-    }
+    )
 }
