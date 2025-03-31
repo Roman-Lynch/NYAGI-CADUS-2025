@@ -32,6 +32,7 @@ import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.common.ops.QuantizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
@@ -45,6 +46,7 @@ import java.nio.FloatBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.Arrays
 
 class ImageClassificationHelper(
     private val context: Context,
@@ -142,9 +144,6 @@ class ImageClassificationHelper(
             }
             labels = loadLabels(context)
 
-            /* THIS CURRENTLY DOESN'T WORK*/
-            /*labels = getModelMetadata(litertBuffer)*/
-
             Interpreter(litertBuffer, options)
         } catch (e: Exception) {
             Log.i(TAG, "Create TFLite from ${options.model.fileName} is failed ${e.message}")
@@ -163,10 +162,6 @@ class ImageClassificationHelper(
                 numThreads = options.threadCount
                 useNNAPI = options.delegate == Delegate.NNAPI
             }
-            labels = loadLabels(context)
-
-            /* THIS CURRENTLY DOESN'T WORK*/
-            /*labels = getModelMetadata(litertBuffer)*/
 
             Interpreter(litertBuffer, options)
         } catch (e: Exception) {
@@ -189,12 +184,13 @@ class ImageClassificationHelper(
                 val startTime = SystemClock.uptimeMillis()
 
                 val rotation = -rotationDegrees / 90
-                val (_, h, w, _) = qa_interpreter?.getInputTensor(0)?.shape() ?: return@withContext
-                val imageProcessor =
-                    ImageProcessor.Builder().add(ResizeOp(h, w, ResizeOp.ResizeMethod.BILINEAR))
-                        .add(Rot90Op(rotation)).add(NormalizeOp(127.5f, 127.5f)).build()
 
-                // Preprocess the image and convert it into a TensorImage for classification.
+                // TensorFlow Lite Support library's processing pipeline
+                val (_, h, w, _) = qa_interpreter?.getInputTensor(0)?.shape() ?: return@withContext
+                val imageProcessor = ImageProcessor.Builder()
+                    .add(ResizeOp(h, w, ResizeOp.ResizeMethod.BILINEAR))
+                    .add(QuantizeOp(0f, 1f))
+                    .build()
                 val tensorImage = imageProcessor.process(TensorImage.fromBitmap(bitmap))
                 val output = runQaWithTFLite(tensorImage)
 
@@ -292,36 +288,44 @@ class ImageClassificationHelper(
     /* RUN QaModel.tflite
         The same as classifyWithTFLite but for YOLO 11 Seg Model */
     private fun runQaWithTFLite(tensorImage: TensorImage): FloatArray {
-        val outputShape = qa_interpreter!!.getOutputTensor(0).shape()
-        val outputBuffer = FloatBuffer.allocate(outputShape.reduce { acc, i -> acc * i })
 
-        outputBuffer.rewind()
-        qa_interpreter?.run(tensorImage.tensorBuffer.buffer, outputBuffer)
-        outputBuffer.rewind()
-        var output = FloatArray(outputBuffer.capacity())
-        outputBuffer.get(output)
+        val bestDetection = YoloSegProcessor.getHighestConfidenceDetection(model = qa_interpreter, image = tensorImage)
 
-        val numClasses = 32 // Update this based on your model
-        val bestDetection = YoloSegProcessor.getHighestConfidenceDetection(output, numClasses)
-
-        Log.d("YOLO Output", "First 20 values: ${output.take(20).joinToString()}")
-        Log.i(TAG, "YOLO detection output ${bestDetection}")
+        Log.i(TAG, "YOLO detection output: ${bestDetection}")
 
         if (bestDetection != null) {
             val bbox = bestDetection.bbox // YOLO output is normalized or relative to model input size
-            val modelInputSize = 640f // YOLO input size (assumed 640x640)
 
             val originalHeight = tensorImage.height
             val originalWidth = tensorImage.width
+            val modelWidth = 640f
+            val modelHeight = 640f
 
+            // YOLO output is assumed to be (cx, cy, w, h)
+            val cx = bbox[0] * modelWidth  // Convert normalized to absolute
+            val cy = bbox[1] * modelHeight
+            val w = bbox[2] * modelWidth
+            val h = bbox[3] * modelHeight
 
-            // Scale bounding box coordinates back to original image size
-            val scaledBBox = floatArrayOf(
-                bbox[0] * originalWidth,  // x_min
-                bbox[1] * originalHeight, // y_min
-                bbox[2] * originalWidth,  // x_max
-                bbox[3] * originalHeight  // y_max
+            // Convert to (x_min, y_min, x_max, y_max)
+            val xMin = cx - (w / 2)
+            val xMax = cx + (w / 2)
+            val yMin = cy - (h / 2)
+            val yMax = cy + (h / 2)
+
+            // Compute aspect ratios
+            val xScale = originalWidth.toFloat() / modelWidth.toFloat()
+            val yScale = originalHeight.toFloat() / modelHeight.toFloat()
+
+            // Scale bounding box to match the original image
+            val scaledBBox =  floatArrayOf(
+                xMin * xScale,
+                xMax * xScale,
+                yMin * yScale,
+                yMax * yScale
             )
+
+            Log.d(TAG, "Scaled Bounding Box: ${scaledBBox.sliceArray(0 until 4).joinToString(", ")}")
 
             return scaledBBox
         } else {

@@ -1,46 +1,104 @@
+import android.graphics.Bitmap
+import android.util.Log
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.image.TensorImage
+import java.nio.FloatBuffer
+import java.util.Arrays
+import kotlin.math.min
+
 object YoloSegProcessor {
 
-    data class Detection(val classId: Int, val confidence: Float, val bbox: FloatArray)
+    data class Detection(val predIdx: Int, val confidence: Float, val bbox: FloatArray, val maskProto: FloatArray? = null)
 
-    fun getHighestConfidenceDetection(output: FloatArray, numClasses: Int): Detection? {
-        if (output.isEmpty()) return null
+    fun getHighestConfidenceDetection(
+        hasMasks: Boolean = true,
+        model: Interpreter?,
+        image: TensorImage
+    ): Detection? {
+        val bitmap = image.bitmap
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 640, 640, true)
+        val inputBuffer = convertBitmapToFloatBuffer(resizedBitmap)
 
-        // Infer the output shape dynamically (assuming 1, 8400, 37 format)
-        val numDetections = output.size / (numClasses + 5) // 8400
+        val detectionOutput = Array(1) { Array(37) { FloatArray(8400) } }
+        val maskOutput = Array(1) { Array(160) { Array(160) { FloatArray(32) } } }
 
-        var maxConfidence = -1f
+        val outputsMap = HashMap<Int, Any>()
+        outputsMap[0] = detectionOutput // Detection output
+        outputsMap[1] = maskOutput // Mask output
+
+        if (model != null) {
+            model.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputsMap)
+        }
+
+        // GET input details
+        val inputTensor = model?.getInputTensor(0)
+        Log.i("QA Detection", "QA Model input details: type=${inputTensor?.dataType()}, shape=${inputTensor?.shape()?.joinToString()}")
+
+        // GET output details
+        val outputTensor = model?.getOutputTensor(0)
+        val shape = outputTensor?.shape()
+        Log.d("ModelOutput", "Shape [0]: ${Arrays.toString(shape)}")
+
+        var highestConf = 0f
         var bestDetection: Detection? = null
 
-        for (i in 0 until numDetections) {
-            val offset = i * (numClasses + 5)
-            val confidence = output[offset + 4] // Confidence score
+        // Assuming confidence is at index 4 in the feature array
+        val confidenceThresh = 0.5f
+        val confidenceIndex = 4
 
-            if (confidence > maxConfidence) {
-                maxConfidence = confidence
+        val confidenceStats = mutableListOf<Float>()
+        for (predIdx in 0 until min(8400, 100)) {  // Sample first 100 predictions
+            confidenceStats.add(detectionOutput[0][confidenceIndex][predIdx])
+        }
+        Log.d("QA Detection", "Confidence stats (first 100): min=${confidenceStats.minOrNull()}, " +
+                "max=${confidenceStats.maxOrNull()}, avg=${confidenceStats.average()}")
 
-                // Find the class with the highest probability
-                var bestClassId = 0
-                var bestClassScore = 0f
-                for (j in 0 until numClasses) {
-                    val classScore = output[offset + 5 + j]
-                    if (classScore > bestClassScore) {
-                        bestClassScore = classScore
-                        bestClassId = j
-                    }
+        // Check all 8400 predictions
+        for (predIdx in 0 until 8400) {
+            val confidence = detectionOutput[0][confidenceIndex][predIdx]
+
+            Log.d("QA Detection", "Detection output: [${detectionOutput[0][0][predIdx]}, ${detectionOutput[0][1][predIdx]}, ${detectionOutput[0][2][predIdx]}, ${detectionOutput[0][3][predIdx]}, ${detectionOutput[0][confidenceIndex][predIdx]}]")
+            if (confidence > confidenceThresh) {
+                // This is a valid prediction, extract all its features
+                val predFeatures = FloatArray(37)
+                for (featureIdx in 0 until 37) {
+                    predFeatures[featureIdx] = detectionOutput[0][featureIdx][predIdx]
                 }
 
-                // Bounding box (x, y, width, height)
-                val bbox = floatArrayOf(
-                    output[offset],     // x
-                    output[offset + 1], // y
-                    output[offset + 2], // width
-                    output[offset + 3]  // height
-                )
+                // Log or process this prediction
+                Log.d("QA Detection", "Prediction #$predIdx with confidence $confidence: ${predFeatures.sliceArray(0 until 4).joinToString(", ")}")
 
-                bestDetection = Detection(bestClassId, confidence, bbox)
+                if (confidence > highestConf) {
+                    bestDetection = Detection(predIdx= predIdx, confidence=confidence, bbox= predFeatures.sliceArray(0 until 4))
+                    highestConf = confidence
+                }
             }
         }
 
+        Log.d("QA Detection", "Detection complete!")
+        Log.d("QA Detection", "Best detection: ${bestDetection}")
         return bestDetection
+    }
+
+    private fun convertBitmapToFloatBuffer(bitmap: Bitmap): FloatBuffer {
+        val inputSize = 640
+        val floatBuffer = FloatBuffer.allocate(1 * inputSize * inputSize * 3)
+        floatBuffer.rewind()
+
+        val intValues = IntArray(inputSize * inputSize)
+        bitmap.getPixels(intValues, 0, inputSize, 0, 0, inputSize, inputSize)
+
+        for (pixel in intValues) {
+            val r = ((pixel shr 16) and 0xFF) / 255.0f // Normalize to [0,1]
+            val g = ((pixel shr 8) and 0xFF) / 255.0f
+            val b = (pixel and 0xFF) / 255.0f
+
+            floatBuffer.put(r)
+            floatBuffer.put(g)
+            floatBuffer.put(b)
+        }
+
+        floatBuffer.rewind()
+        return floatBuffer
     }
 }

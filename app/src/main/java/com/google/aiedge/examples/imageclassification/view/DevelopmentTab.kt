@@ -59,7 +59,7 @@ fun DevelopmentScreen(
                 uiStateQa = uiStateQa,
                 currentLanguage = currentLanguage,
                 modifier = Modifier.fillMaxWidth(),
-                onImageAnalyzed = onImageProxyAnalyzed,
+                onImageAnalyzed = onImageProxyAnalyzed
             )
         }
         Pages.Settings -> {
