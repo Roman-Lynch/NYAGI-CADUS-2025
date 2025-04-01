@@ -2,6 +2,7 @@ package com.google.aiedge.examples.imageclassification.pages
 
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
@@ -50,17 +51,17 @@ fun BreastCameraPage(
         val qa_box = uiStateQa.QaBox
 
         var box = false
-        var width = 0f
-        var height = 0f
         var boundingbox = FloatArray(0)
+        var maskBool = false
+        var mask = Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
 
         // LOG QA Box Response
         if (!qa_box.isEmpty()) {
             Log.d("QA BOX", "QA BOX output: [${qa_box[0].x_1}, ${qa_box[0].x_2}, ${qa_box[0].y_1}, ${qa_box[0].y_2}]")
-            width = (qa_box[0].x_2 - qa_box[0].x_1).absoluteValue
-            height = (qa_box[0].y_2 - qa_box[0].y_1).absoluteValue
             box = true
             boundingbox = listOf(qa_box[0].x_1, qa_box[0].y_1, qa_box[0].x_2, qa_box[0].y_2).toFloatArray()
+            maskBool = true
+            mask = qa_box[0].mask
         } else {
             Log.d("QA BOX", "QA BOX output is empty")
         }
@@ -75,10 +76,10 @@ fun BreastCameraPage(
         }
         if (highestScore > .0f) { // change when on phone
             if (highestCategory == "benign" && box){
-                ColoredCameraBorder(Color.Green, canvasWidth = width, canvasHeight = height, bbox = boundingbox)
+                ColoredCameraBorder(Color.Green, bbox = boundingbox, maskExists = maskBool, mask = mask)
             }
             if (highestCategory == "malignant" && box) {
-                ColoredCameraBorder(Color.Red, canvasWidth = width, canvasHeight = height, bbox = boundingbox)
+                ColoredCameraBorder(Color.Red, bbox = boundingbox, maskExists = maskBool, mask = mask)
             }
         }
         val configuration = LocalConfiguration.current

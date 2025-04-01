@@ -5,10 +5,17 @@ import org.tensorflow.lite.support.image.TensorImage
 import java.nio.FloatBuffer
 import java.util.Arrays
 import kotlin.math.min
+import kotlin.math.exp
 
 object YoloSegProcessor {
 
-    data class Detection(val predIdx: Int, val confidence: Float, val bbox: FloatArray, val maskProto: FloatArray? = null)
+    data class Detection(
+        val predIdx: Int,
+        val confidence: Float,
+        val bbox: FloatArray,
+        val maskProto: FloatArray? = null,
+        val processedMask: Bitmap? = null
+    )
 
     fun getHighestConfidenceDetection(
         hasMasks: Boolean = true,
@@ -57,7 +64,6 @@ object YoloSegProcessor {
         for (predIdx in 0 until 8400) {
             val confidence = detectionOutput[0][confidenceIndex][predIdx]
 
-            Log.d("QA Detection", "Detection output: [${detectionOutput[0][0][predIdx]}, ${detectionOutput[0][1][predIdx]}, ${detectionOutput[0][2][predIdx]}, ${detectionOutput[0][3][predIdx]}, ${detectionOutput[0][confidenceIndex][predIdx]}]")
             if (confidence > confidenceThresh) {
                 // This is a valid prediction, extract all its features
                 val predFeatures = FloatArray(37)
@@ -65,11 +71,28 @@ object YoloSegProcessor {
                     predFeatures[featureIdx] = detectionOutput[0][featureIdx][predIdx]
                 }
 
-                // Log or process this prediction
-                Log.d("QA Detection", "Prediction #$predIdx with confidence $confidence: ${predFeatures.sliceArray(0 until 4).joinToString(", ")}")
-
                 if (confidence > highestConf) {
-                    bestDetection = Detection(predIdx= predIdx, confidence=confidence, bbox= predFeatures.sliceArray(0 until 4))
+                    // Extract mask coefficients (assuming they start at index 5)
+                    val maskProto = if (hasMasks) {
+                        predFeatures.sliceArray(5 until 37)
+                    } else {
+                        null
+                    }
+
+                    // Process the mask if we have mask prototypes
+                    val processedMask = if (hasMasks && maskProto != null) {
+                        decodeMask(maskProto, maskOutput, bitmap.width, bitmap.height)
+                    } else {
+                        null
+                    }
+
+                    bestDetection = Detection(
+                        predIdx = predIdx,
+                        confidence = confidence,
+                        bbox = predFeatures.sliceArray(0 until 4),
+                        maskProto = maskProto,
+                        processedMask = processedMask
+                    )
                     highestConf = confidence
                 }
             }
@@ -77,7 +100,48 @@ object YoloSegProcessor {
 
         Log.d("QA Detection", "Detection complete!")
         Log.d("QA Detection", "Best detection: ${bestDetection}")
+        if (bestDetection?.processedMask != null) {
+            Log.d("QA Detection", "Mask dimensions: ${bestDetection.processedMask!!.width}x${bestDetection.processedMask!!.height}")
+        }
         return bestDetection
+    }
+
+    private fun decodeMask(
+        maskCoeffs: FloatArray,
+        maskProtos: Array<Array<Array<FloatArray>>>,
+        originalWidth: Int,
+        originalHeight: Int
+    ): Bitmap {
+        // Create a mask of size 160x160 (mask proto dimensions)
+        val maskHeight = 160
+        val maskWidth = 160
+        val maskPixels = IntArray(maskWidth * maskHeight)
+
+        // For each pixel in the mask, compute the value
+        for (y in 0 until maskHeight) {
+            for (x in 0 until maskWidth) {
+                var maskValue = 0f
+
+                // Apply the coefficients to the prototype masks
+                for (protoIdx in 0 until 32) {
+                    maskValue += maskProtos[0][y][x][protoIdx] * maskCoeffs[protoIdx]
+                }
+
+                // Apply sigmoid to get value between 0 and 1
+                maskValue = 1.0f / (1.0f + exp(-maskValue.toDouble())).toFloat()
+
+                // Convert to 0-255 range for alpha
+                val alphaValue = (maskValue * 255).toInt()
+                maskPixels[y * maskWidth + x] = (alphaValue shl 24) or 0xFFFFFF // White with alpha
+            }
+        }
+
+        // Create bitmap from the mask
+        val maskBitmap = Bitmap.createBitmap(maskWidth, maskHeight, Bitmap.Config.ARGB_8888)
+        maskBitmap.setPixels(maskPixels, 0, maskWidth, 0, 0, maskWidth, maskHeight)
+
+        // Resize to original image dimensions
+        return Bitmap.createScaledBitmap(maskBitmap, originalWidth, originalHeight, true)
     }
 
     private fun convertBitmapToFloatBuffer(bitmap: Bitmap): FloatBuffer {

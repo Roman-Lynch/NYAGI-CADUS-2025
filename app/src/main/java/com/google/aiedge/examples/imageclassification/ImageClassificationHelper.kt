@@ -1,25 +1,11 @@
-/*
- * Copyright 2024 The Google AI Edge Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.google.aiedge.examples.imageclassification
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.WindowManager
 import androidx.camera.core.ImageProxy
 import com.google.aiedge.examples.imageclassification.data.GalleryImage
 import com.google.aiedge.examples.imageclassification.data.GalleryImages
@@ -52,6 +38,21 @@ class ImageClassificationHelper(
     private val context: Context,
     private var options: Options = Options(),
 ) {
+    // Added screen dimensions properties
+    private val screenWidth: Int
+    private val screenHeight: Int
+
+    init {
+        // Initialize screen dimensions in the constructor
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        screenWidth = displayMetrics.widthPixels
+        screenHeight = displayMetrics.heightPixels
+
+        Log.i(TAG, "Screen dimensions: $screenWidth x $screenHeight")
+    }
+
     class Options(
         /** The enum contains the model file name, relative to the assets/ directory */
         var model: Model = DEFAULT_MODEL,
@@ -67,7 +68,9 @@ class ImageClassificationHelper(
          * which is equivalent to setting numThreads to 1. If unspecified, or set to the value -1,
          * the number of threads used will be implementation-defined and platform-dependent.
          * */
-        var threadCount: Int = DEFAULT_THREAD_COUNT
+        var threadCount: Int = DEFAULT_THREAD_COUNT,
+        /** Whether to scale mask to screen size (true) or original image size (false) */
+        var scaleToScreen: Boolean = true
     )
 
     companion object {
@@ -81,7 +84,6 @@ class ImageClassificationHelper(
         /* SHOULD PROBABLY BE >0.8 */
         const val DEFAULT_THRESHOLD = 0.0f
         const val DEFAULT_THREAD_COUNT = 2
-
     }
 
     /* ONLY ADDED TO GET MODEL WORKING. THIS SHOULD BE INCLUDED in training from now on"*/
@@ -185,6 +187,12 @@ class ImageClassificationHelper(
 
                 val rotation = -rotationDegrees / 90
 
+                // Store the original bitmap dimensions before any processing
+                val originalBitmapWidth = bitmap.width
+                val originalBitmapHeight = bitmap.height
+
+                Log.d(TAG, "Original bitmap dimensions: $originalBitmapWidth x $originalBitmapHeight")
+
                 // TensorFlow Lite Support library's processing pipeline
                 val (_, h, w, _) = qa_interpreter?.getInputTensor(0)?.shape() ?: return@withContext
                 val imageProcessor = ImageProcessor.Builder()
@@ -192,10 +200,14 @@ class ImageClassificationHelper(
                     .add(QuantizeOp(0f, 1f))
                     .build()
                 val tensorImage = imageProcessor.process(TensorImage.fromBitmap(bitmap))
-                val output = runQaWithTFLite(tensorImage)
 
-                val box = output.map {
-                    QaBox(x_1 = output[0], x_2 = output[1], y_1 =output[2], y_2 =output[3])
+                // Pass original dimensions to runQaWithTFLite
+                val output = runQaWithTFLite(tensorImage, originalBitmapWidth, originalBitmapHeight)
+                val outputBbox = output.Bbox
+                val outputMask = output.Mask
+
+                val box = outputBbox.map {
+                    QaBox(x_1 = outputBbox[0], x_2 = outputBbox[1], y_1 = outputBbox[2], y_2 = outputBbox[3], mask = outputMask)
                 }.take(options.resultCount)
 
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
@@ -204,7 +216,7 @@ class ImageClassificationHelper(
                     if (box.isNotEmpty()) {
                         Log.i(TAG, "QA Classification Complete complete. Box: ${box}")
                     } else {
-                        Log.w(TAG, "Category empty")
+                        Log.w(TAG, "QA Classification not complete")
                     }
                 }
                 logQaResults()
@@ -287,19 +299,25 @@ class ImageClassificationHelper(
 
     /* RUN QaModel.tflite
         The same as classifyWithTFLite but for YOLO 11 Seg Model */
-    private fun runQaWithTFLite(tensorImage: TensorImage): FloatArray {
-
+    private fun runQaWithTFLite(
+        tensorImage: TensorImage,
+        originalBitmapWidth: Int,
+        originalBitmapHeight: Int
+    ): BboxMaskPair {
         val bestDetection = YoloSegProcessor.getHighestConfidenceDetection(model = qa_interpreter, image = tensorImage)
 
         Log.i(TAG, "YOLO detection output: ${bestDetection}")
 
         if (bestDetection != null) {
             val bbox = bestDetection.bbox // YOLO output is normalized or relative to model input size
+            val mask = bestDetection.processedMask
 
-            val originalHeight = tensorImage.height
-            val originalWidth = tensorImage.width
+            val tensorHeight = tensorImage.height
+            val tensorWidth = tensorImage.width
             val modelWidth = 640f
             val modelHeight = 640f
+
+            Log.d(TAG, "Tensor dimensions: $tensorWidth x $tensorHeight")
 
             // YOLO output is assumed to be (cx, cy, w, h)
             val cx = bbox[0] * modelWidth  // Convert normalized to absolute
@@ -313,23 +331,61 @@ class ImageClassificationHelper(
             val yMin = cy - (h / 2)
             val yMax = cy + (h / 2)
 
-            // Compute aspect ratios
-            val xScale = originalWidth.toFloat() / modelWidth.toFloat()
-            val yScale = originalHeight.toFloat() / modelHeight.toFloat()
+            // Calculate scaling factors based on whether to scale to screen or original image
+            val targetWidth: Int
+            val targetHeight: Int
+            val xScale: Float
+            val yScale: Float
 
-            // Scale bounding box to match the original image
-            val scaledBBox =  floatArrayOf(
+            if (options.scaleToScreen) {
+                // Scale to screen dimensions
+                targetWidth = screenWidth
+                targetHeight = screenHeight
+                xScale = screenWidth.toFloat() / modelWidth.toFloat()
+                yScale = screenHeight.toFloat() / modelHeight.toFloat()
+
+                Log.d(TAG, "Scaling mask to screen dimensions: ${targetWidth}x${targetHeight}")
+            } else {
+                // Scale to original bitmap dimensions (not tensor dimensions)
+                targetWidth = originalBitmapWidth
+                targetHeight = originalBitmapHeight
+                xScale = originalBitmapWidth.toFloat() / modelWidth.toFloat()
+                yScale = originalBitmapHeight.toFloat() / modelHeight.toFloat()
+
+                Log.d(TAG, "Scaling mask to original bitmap dimensions: ${targetWidth}x${targetHeight}")
+            }
+
+            // Scale bounding box
+            val scaledBBox = floatArrayOf(
                 xMin * xScale,
                 xMax * xScale,
                 yMin * yScale,
                 yMax * yScale
             )
 
-            Log.d(TAG, "Scaled Bounding Box: ${scaledBBox.sliceArray(0 until 4).joinToString(", ")}")
+            // Scale the mask if it exists
+            if (mask != null) {
+                // Create a properly scaled mask
+                val scaledMask = Bitmap.createScaledBitmap(
+                    mask,
+                    targetWidth,
+                    targetHeight,
+                    true
+                )
 
-            return scaledBBox
+                Log.d(TAG, "Scaled Mask Dimensions: ${scaledMask.width}x${scaledMask.height}")
+                Log.d(TAG, "Scaled Bounding Box: ${scaledBBox.sliceArray(0 until 4).joinToString(", ")}")
+
+                return BboxMaskPair(scaledBBox, scaledMask)
+            } else {
+                Log.d(TAG, "Bounding box was found, but no mask was found...")
+                return BboxMaskPair(FloatArray(0), Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888))
+            }
         } else {
-            return FloatArray(0) // Return empty if no detection
+            val targetWidth = if (options.scaleToScreen) screenWidth else originalBitmapWidth
+            val targetHeight = if (options.scaleToScreen) screenHeight else originalBitmapHeight
+
+            return BboxMaskPair(FloatArray(0), Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)) // Return empty if no detection
         }
     }
 
@@ -403,5 +459,7 @@ class ImageClassificationHelper(
 
     data class Category(val label: String, val score: Float)
 
-    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float)
+    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float, val mask: Bitmap)
+
+    data class BboxMaskPair(val Bbox: FloatArray, val Mask: Bitmap)
 }

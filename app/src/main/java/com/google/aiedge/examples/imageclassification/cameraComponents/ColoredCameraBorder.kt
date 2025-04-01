@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.cameraComponents
 
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,61 +9,62 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import kotlin.math.absoluteValue
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 import kotlin.math.max
 import kotlin.math.min
 
 @Composable
 fun ColoredCameraBorder(
     color: Color,
-    canvasWidth: Float,
-    canvasHeight: Float,
-    bbox: FloatArray? // Expecting [x1, y1, x2, y2]
+    bbox: FloatArray?, // Expecting [x1, y1, x2, y2]
+    maskExists: Boolean = false,
+    mask: Bitmap = Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                compositingStrategy = CompositingStrategy.Offscreen
-            }
-            .drawWithContent {
-                drawContent()
+        modifier = Modifier.fillMaxSize().drawWithContent {
+            drawContent()
 
-                // Draw the bounding box only if bbox is provided
-                if (bbox != null && bbox.size == 4) {
-                    // Extract coordinates
-                    val x1 = bbox[0]
-                    val y1 = bbox[1]
-                    val x2 = bbox[2]
-                    val y2 = bbox[3]
+            if (bbox != null && bbox.size == 4) {
+                // Ensure coordinates are in correct order
+                val x1 = min(bbox[0], bbox[2])
+                val y1 = min(bbox[1], bbox[3])
+                val x2 = max(bbox[0], bbox[2])
+                val y2 = max(bbox[1], bbox[3])
 
-                    // Calculate width and height for the rectangle
-                    val width = (x2 - x1).absoluteValue
-                    val height = (y2 - y1).absoluteValue
+                // Calculate width and height for the rectangle
+                val width = x2 - x1
+                val height = y2 - y1
 
-                    val offset_x = ((x1).absoluteValue + width)
-                    val offset_y = ((y1).absoluteValue + height)
+                Log.d("DrawBbox", "Corrected Bbox - Width: $width, Height: $height")
+                Log.d("DrawBbox", "Corrected Offset - X: $x1, Y: $y1")
 
-                    Log.d("DrawBbox", "Bbox - Width: $width, Height: $height")
-                    Log.d("DrawBbox", "Offset - X: $offset_x, Y: $offset_y")
-
-                    // Only draw if we have a valid rectangle (positive width and height)
-                    if (width > 0 && height > 0) {
-                        drawRect(
-                            color = color,
-                            topLeft = Offset((x1).absoluteValue+width, (y1).absoluteValue-height), // Corrected to use (x1, y1) as the top-left corner
-                            size = Size(width, height),
-                            style = Stroke(width = 5f) // Outline only
-                        )
-                    }
+                if (width > 0 && height > 0) {
+                    drawRect(
+                        color = color,
+                        topLeft = Offset(x1, y1),
+                        size = Size(width, height),
+                        style = Stroke(width = 5f)
+                    )
                 }
             }
+        }
     )
+
+    // Visualize the mask if it exists
+    if (maskExists) {
+        Log.d("DrawMask", "Mask received with size [${mask.width}, ${mask.height}]")
+
+        Image(
+            painter = BitmapPainter(mask.asImageBitmap()),
+            contentDescription = "Mask visualization",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
+    }
 }
