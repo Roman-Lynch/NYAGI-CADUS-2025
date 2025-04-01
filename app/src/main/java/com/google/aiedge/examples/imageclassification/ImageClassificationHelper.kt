@@ -207,7 +207,7 @@ class ImageClassificationHelper(
                 val outputMask = output.Mask
 
                 val box = outputBbox.map {
-                    QaBox(x_1 = outputBbox[0], x_2 = outputBbox[1], y_1 = outputBbox[2], y_2 = outputBbox[3], mask = outputMask)
+                    QaBox(x_1 = outputBbox[0], x_2 = outputBbox[1], y_1 = outputBbox[2], y_2 = outputBbox[3], mask = outputMask, hasMask = true)
                 }.take(options.resultCount)
 
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
@@ -320,10 +320,10 @@ class ImageClassificationHelper(
             Log.d(TAG, "Tensor dimensions: $tensorWidth x $tensorHeight")
 
             // YOLO output is assumed to be (cx, cy, w, h)
-            val cx = bbox[0] * modelWidth  // Convert normalized to absolute
-            val cy = bbox[1] * modelHeight
-            val w = bbox[2] * modelWidth
-            val h = bbox[3] * modelHeight
+            val cx = bbox[0] * screenWidth // Convert normalized to absolute
+            val cy = bbox[1] * screenHeight
+            val w = bbox[2] * screenWidth
+            val h = bbox[3] * screenHeight
 
             // Convert to (x_min, y_min, x_max, y_max)
             val xMin = cx - (w / 2)
@@ -334,33 +334,27 @@ class ImageClassificationHelper(
             // Calculate scaling factors based on whether to scale to screen or original image
             val targetWidth: Int
             val targetHeight: Int
-            val xScale: Float
-            val yScale: Float
 
             if (options.scaleToScreen) {
                 // Scale to screen dimensions
                 targetWidth = screenWidth
                 targetHeight = screenHeight
-                xScale = screenWidth.toFloat() / modelWidth.toFloat()
-                yScale = screenHeight.toFloat() / modelHeight.toFloat()
 
                 Log.d(TAG, "Scaling mask to screen dimensions: ${targetWidth}x${targetHeight}")
             } else {
                 // Scale to original bitmap dimensions (not tensor dimensions)
                 targetWidth = originalBitmapWidth
                 targetHeight = originalBitmapHeight
-                xScale = originalBitmapWidth.toFloat() / modelWidth.toFloat()
-                yScale = originalBitmapHeight.toFloat() / modelHeight.toFloat()
 
                 Log.d(TAG, "Scaling mask to original bitmap dimensions: ${targetWidth}x${targetHeight}")
             }
 
             // Scale bounding box
             val scaledBBox = floatArrayOf(
-                xMin * xScale,
-                xMax * xScale,
-                yMin * yScale,
-                yMax * yScale
+                xMin,
+                xMax,
+                yMin,
+                yMax
             )
 
             // Scale the mask if it exists
@@ -459,7 +453,7 @@ class ImageClassificationHelper(
 
     data class Category(val label: String, val score: Float)
 
-    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float, val mask: Bitmap)
+    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float, val mask: Bitmap, val hasMask: Boolean = false)
 
     data class BboxMaskPair(val Bbox: FloatArray, val Mask: Bitmap)
 }
