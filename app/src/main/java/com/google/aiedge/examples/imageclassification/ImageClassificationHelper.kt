@@ -20,6 +20,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
+import androidx.camera.core.ImageProxy
+import com.google.aiedge.examples.imageclassification.data.GalleryImage
+import com.google.aiedge.examples.imageclassification.data.GalleryImages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,6 +42,9 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class ImageClassificationHelper(
     private val context: Context,
@@ -140,7 +146,11 @@ class ImageClassificationHelper(
         this.options = options
     }
 
-    suspend fun classify(bitmap: Bitmap, rotationDegrees: Int) {
+    suspend fun classify(imageProxy: ImageProxy, context: Context, scanType: String) {
+
+        val bitmap: Bitmap = imageProxy.toBitmap()
+        val rotationDegrees: Int = imageProxy.imageInfo.rotationDegrees
+
         try {
             withContext(Dispatchers.IO) {
                 if (interpreter == null) return@withContext
@@ -174,6 +184,27 @@ class ImageClassificationHelper(
                     }
                 }
                 logClassificationResults()
+
+                fun saveImageToGallery() {
+
+                    val currentDateTime = LocalDateTime.now()
+                    val dateString = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    val timeString = currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+                    val galleryImages = GalleryImages(context)
+                    val imageMetadata = GalleryImage(
+                        dateString = dateString,
+                        timeString = timeString,
+                        scanTypeString = scanType,
+                        label = categories[0].label,
+                        confidence = categories[0].score.toDouble(),
+                        scanID = UUID.randomUUID(),
+                        patientName = "",
+                    )
+                    galleryImages.addImage(galleryImage = imageMetadata, imageProxy = imageProxy)
+                }
+                val shouldSaveToGallery = true
+                if (shouldSaveToGallery) saveImageToGallery()
 
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))

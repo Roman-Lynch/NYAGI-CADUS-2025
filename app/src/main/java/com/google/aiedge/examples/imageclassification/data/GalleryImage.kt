@@ -8,6 +8,7 @@ class GalleryImage(
     val dateString: String,
     val timeString: String,
     val scanTypeString: String,
+    val label: String,
     val confidence: Double,
     val scanID: UUID,
     val patientName: String,
@@ -20,6 +21,8 @@ class GalleryImage(
             ?: throw JSONException("Missing or invalid 'timeString'"),
         scanTypeString = json.optString("scanTypeString").takeIf { it.isNotEmpty() }
             ?: throw JSONException("Missing or invalid 'scanTypeString'"),
+        label = json.optString("label").takeIf { it.isNotEmpty() }
+            ?: throw JSONException("Missing or invalid 'label'"),
         confidence = json.optDouble("confidence", Double.NaN).takeIf { it.isFinite() }
             ?: throw JSONException("Missing or invalid 'confidence'"),
         scanID = try {
@@ -36,6 +39,7 @@ class GalleryImage(
             put("dateString", dateString)
             put("timeString", timeString)
             put("scanTypeString", scanTypeString)
+            put("label", label)
             put("confidence", confidence)
             put("scanID", scanID.toString())
             put("patientName", patientName)

@@ -1,11 +1,10 @@
 package com.google.aiedge.examples.imageclassification.view
 
+import android.content.Context
 import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,7 +20,7 @@ import com.google.aiedge.examples.imageclassification.pages.GalleryPage
 
 @Composable
 fun DevelopmentScreen(
-    onImageProxyAnalyzed: (ImageProxy) -> Unit,
+    onImageProxyAnalyzed: (ImageProxy, Context, String) -> Unit,
     mainViewModel: MainViewModel,
 ) {
 

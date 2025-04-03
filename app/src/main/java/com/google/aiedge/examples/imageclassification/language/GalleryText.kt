@@ -27,5 +27,10 @@ class GalleryText {
             val textField = getLocalizedTextField(context, language)
             return textField.get("gallery")
         }
+
+        fun getGalleryBreastCancerUltrasoundScanDescription(context: Context, language: Language): String {
+            val textField = getLocalizedTextField(context, language)
+            return textField.get("Breast Cancer Ultrasound")
+        }
     }
 }
