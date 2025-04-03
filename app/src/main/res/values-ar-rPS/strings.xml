@@ -10,8 +10,10 @@
     <string name="ok">حسنًا</string>
     <string name="go_back">عُد</string>
     <string name="settings">إعدادات</string>
+    <string name="body_part_selector">محدد أجزاء الجسم</string>
     <string name="language">لغة</string>
     <string name="rotate_screen">تدوير الشاشة</string>
     <string name="no_camera_permissions">لا توجد أذونات للكاميرا</string>
     <string name="enable_camera_permissions_alert">تحتاج إلى تمكين أذونات الكاميرا في إعدادات جهازك لاستخدام هذه الصفحة</string>
+    <string name="breast">نهد</string>
 </resources>

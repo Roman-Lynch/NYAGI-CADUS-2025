@@ -11,6 +11,8 @@
     <string name="settings">Settings</string>
     <string name="language">Language</string>
     <string name="rotate_screen">Rotate Screen</string>
-    <string name="no_camera_permissions">No Camera Permissions</string>
+    <string name="no_camera_permissions">Camera Permissions Not Enabled</string>
     <string name="enable_camera_permissions_alert">You need to enable camera permissions in your device\'s settings to use this page</string>
+    <string name="body_part_selector">Body Part Selector</string>
+    <string name="breast">Breast</string>
 </resources>

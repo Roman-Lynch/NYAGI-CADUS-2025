@@ -10,8 +10,10 @@
     <string name="ok">ok</string>
     <string name="go_back">Volte</string>
     <string name="settings">Configurações</string>
+    <string name="body_part_selector">Seletor de Parte do Corpo</string>
     <string name="language">Linguagem</string>
     <string name="rotate_screen">Rodar o ecrã</string>
     <string name="no_camera_permissions">Sem permissões para a câmara</string>
     <string name="enable_camera_permissions_alert">É necessário ativar as permissões da câmara nas definições do seu dispositivo para utilizar esta página</string>
+    <string name="breast">Peito</string>
 </resources>

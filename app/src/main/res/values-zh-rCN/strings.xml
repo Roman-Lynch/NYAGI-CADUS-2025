@@ -10,8 +10,10 @@
     <string name="ok">确定</string>
     <string name="go_back">回去</string>
     <string name="settings">设置</string>
+    <string name="body_part_selector">身体部位选择器</string>
     <string name="language">语言</string>
     <string name="rotate_screen">旋转屏幕</string>
     <string name="no_camera_permissions">无摄像头权限</string>
     <string name="enable_camera_permissions_alert">您需要在设备的设置中启用摄像头权限才能使用此页面</string>
+    <string name="breast">乳房</string>
 </resources>

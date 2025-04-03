@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.pages
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
@@ -31,12 +32,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.UiState
+import com.google.aiedge.examples.imageclassification.language.BodyPartsPageText
 import com.google.aiedge.examples.imageclassification.language.SettingsPageText
 import com.google.aiedge.examples.imageclassification.navigation.Pages
 import com.google.aiedge.examples.imageclassification.view.TextHeader
 
 // include all implemented model options here
-private val options:List<String> = listOf("Breast", "Pregnancy", "Early Pregnancy", "Late Pregnancy", "Shoulder")
+//private val options:List<String> = listOf("Breast", "Pregnancy", "Early Pregnancy", "Late Pregnancy", "Shoulder")
 
 @Composable
 fun CameraButton(
@@ -52,7 +54,7 @@ fun CameraButton(
 
 
 @Composable
-fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
+fun SelectorOption(optionName:String, mainViewModel: MainViewModel, context: Context, currentLanguage: Language) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data("file:///android_asset/ModelSelectionIcons/${optionName}.png")
@@ -69,6 +71,9 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
     // in dp
     val buttonSize = 180
     val textboxHeight = 50
+
+    // converts option name to lower case to retrieve ID
+    val stringID = optionName.replaceFirstChar { it.lowercase() }
 
     Box(Modifier
         .height(buttonSize.dp)
@@ -90,7 +95,7 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
                     .border(3.dp, Theme.Grey, shape = RoundedCornerShape(10.dp))
 
             ){
-                Text(optionName,
+                Text(BodyPartsPageText.getBodyPartText(context, currentLanguage, stringID),
                     modifier = Modifier.align(Alignment.Center),
                     fontSize = 20.sp)
             }
@@ -112,10 +117,8 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
 fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, mainViewModel: MainViewModel) {
     Column(modifier = modifier) {
 //        OptionsGrid()
-        // Update settings text with the current language
-        TextHeader("Body Part Selector") // TEMP HARD CODED STRING
-//        val context = LocalContext.current
-//        TextHeader(SettingsPageText.getSettings(context, currentLanguage))
-        SelectorOption("Breast", mainViewModel)
+        val context = LocalContext.current
+        TextHeader(BodyPartsPageText.getBodyPartSelectorText(context, currentLanguage))
+        SelectorOption("Breast", mainViewModel, context, currentLanguage)
     }
 }
