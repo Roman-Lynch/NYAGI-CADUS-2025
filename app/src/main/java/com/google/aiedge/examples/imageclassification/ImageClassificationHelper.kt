@@ -311,7 +311,7 @@ class ImageClassificationHelper(
                     galleryImages.addImage(galleryImage = imageMetadata, imageProxy = imageProxy)
                 }
                 val shouldSaveToGallery = true
-                if (shouldSaveToGallery) saveImageToGallery()
+                //if (shouldSaveToGallery) saveImageToGallery()
 
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))
