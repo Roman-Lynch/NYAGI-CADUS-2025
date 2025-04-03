@@ -219,7 +219,7 @@ class ImageClassificationHelper(
                 val outputMask = output.Mask
 
                 val box = outputBbox.map {
-                    QaBox(x_1 = outputBbox[0], x_2 = outputBbox[1], y_1 = outputBbox[2], y_2 = outputBbox[3], mask = outputMask, hasMask = true)
+                    QaBox(x_1 = outputBbox[0], x_2 = outputBbox[1], y_1 = outputBbox[2], y_2 = outputBbox[3], mask = outputMask, hasMask = true, screenHeight = screenHeight, screenWidth=screenWidth)
                 }.take(options.resultCount)
 
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
@@ -618,7 +618,7 @@ class ImageClassificationHelper(
 
     data class Category(val label: String, val score: Float)
 
-    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float, val mask: Bitmap, val hasMask: Boolean = false)
+    data class QaBox(val x_1: Float, val x_2: Float, val y_1: Float, val y_2: Float, val mask: Bitmap, val hasMask: Boolean = false, val screenHeight: Int, val screenWidth: Int)
 
     data class BboxMaskPair(val Bbox: FloatArray, val Mask: Bitmap)
 }

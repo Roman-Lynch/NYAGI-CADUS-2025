@@ -85,10 +85,10 @@ fun BreastCameraPage(
         }
         if (highestScore > .0f) { // change when on phone
             if (highestCategory == "benign" && box){
-                ColoredCameraBorder(Color.Green, bbox = boundingbox, maskExists = maskBool, mask = mask)
+                ColoredCameraBorder(Color.Green, bbox = boundingbox, maskExists = maskBool, mask = mask, confidence = highestScore, screenHeight = qa_box[0].screenHeight, screenWidth = qa_box[0].screenWidth)
             }
             if (highestCategory == "malignant" && box) {
-                ColoredCameraBorder(Color.Red, bbox = boundingbox, maskExists = maskBool, mask = mask)
+                ColoredCameraBorder(Color.Red, bbox = boundingbox, maskExists = maskBool, mask = mask, confidence = highestScore, screenHeight = qa_box[0].screenHeight, screenWidth = qa_box[0].screenWidth)
             }
         }
         val configuration = LocalConfiguration.current
