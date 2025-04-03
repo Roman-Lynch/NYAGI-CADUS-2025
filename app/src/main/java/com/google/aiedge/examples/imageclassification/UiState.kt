@@ -18,6 +18,16 @@ package com.google.aiedge.examples.imageclassification
 
 import androidx.compose.runtime.Immutable
 
+/* RUN QaModel.tflite
+        The same as UiState but for YOLO 11 Seg Model */
+@Immutable
+class UiStateQa(
+    val inferenceTime: Long = 0L,
+    val QaBox: List<ImageClassificationHelper.QaBox> = emptyList(),
+    val setting: Setting = Setting(),
+    val errorMessage: String? = null,
+)
+
 @Immutable
 class UiState(
     val inferenceTime: Long = 0L,

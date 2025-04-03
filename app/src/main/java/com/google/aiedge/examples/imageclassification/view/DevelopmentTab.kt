@@ -33,13 +33,14 @@ fun DevelopmentScreen(
     }
 
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+    val uiStateQa by mainViewModel.uiStateQa.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         currentLanguage = languageSettingsGateway.getSavedLanguage()
         Log.d("LanguageDebug", "Language loaded: ${currentLanguage.name}")
     }
 
-    HeaderBar(currentLanguage, mainViewModel)
+    //HeaderBar(currentLanguage, mainViewModel)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
@@ -55,9 +56,10 @@ fun DevelopmentScreen(
         Pages.Scan -> {
             BreastCameraPage(
                 uiState = uiState,
+                uiStateQa = uiStateQa,
                 currentLanguage = currentLanguage,
-                modifier = Modifier.fillMaxWidth(),
-                onImageAnalyzed = onImageProxyAnalyzed,
+                modifier = Modifier.fillMaxSize(),
+                onImageAnalyzed = onImageProxyAnalyzed
             )
         }
         Pages.Settings -> {
