@@ -1,13 +1,11 @@
 package com.google.aiedge.examples.imageclassification.pages
 
+import android.content.res.Configuration
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -25,6 +23,8 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.Theme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Alignment
@@ -68,6 +68,15 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel, context: Con
 //        modifier = Modifier
 //            .size(300.dp)
 //    )
+    Box(
+        Modifier
+            .height(300.dp)
+            .width(300.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Theme.Purple)
+            .paint(painter, contentScale = ContentScale.FillBounds)
+            .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)),
+    ) {
     // in dp
     val buttonSize = 180
     val textboxHeight = 50
