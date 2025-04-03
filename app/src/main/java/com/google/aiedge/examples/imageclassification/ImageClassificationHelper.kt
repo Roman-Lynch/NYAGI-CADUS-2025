@@ -243,7 +243,7 @@ class ImageClassificationHelper(
         }
     }
 
-    suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap?, rotationDegrees: Int, context: Context, scanType: String)) {
+    suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap, rotationDegrees: Int, context: Context, scanType: String, mask: Bitmap?) {
         try {
 
             // APPLY QA mask to image before classification

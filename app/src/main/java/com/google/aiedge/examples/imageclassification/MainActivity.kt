@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
-import android.media.Image
 import android.content.Context
 import android.graphics.YuvImage
 import android.os.Bundle
@@ -19,7 +18,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.camera.core.ImageProxy
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -37,7 +35,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val uiStateQa by viewModel.uiStateQa.collectAsStateWithLifecycle()
+
             fun onImageProxyAnalyzed(imageProxy: ImageProxy, context: Context, scanType: String) {
+
                 viewModel.run_QA(imageProxy)
                 if (uiStateQa.QaBox.isNotEmpty()) {
                     val bbox = uiStateQa.QaBox
@@ -62,7 +64,12 @@ class MainActivity : ComponentActivity() {
                         // APPLY mask to image before processing if there's a mask to apply
                         if (uiStateQa.QaBox[0].hasMask && uiStateQa.QaBox[0].mask != null) {
                             try {
-                                viewModel.classify(imageProxy, uiStateQa.QaBox[0].mask)
+                                viewModel.classify(
+                                    imageProxy =imageProxy,
+                                    context =context,
+                                    scanType =scanType,
+                                    mask =uiStateQa.QaBox[0].mask
+                                )
                                 Log.e("MainActivity", "Mask applied to image")
                             } catch (e: Exception) {
                                 Log.e(
@@ -71,8 +78,10 @@ class MainActivity : ComponentActivity() {
                                         e
                                 )
                                 viewModel.classify(
-                                        imageProxy,
-                                        mask = null
+                                    imageProxy =imageProxy,
+                                    context =context,
+                                    scanType =scanType,
+                                    mask = null
                                 )  // Fallback to original image
                             }
                         } else {
@@ -80,17 +89,17 @@ class MainActivity : ComponentActivity() {
                                     "MainActivity",
                                     "No mask found. Running model on unmasked image"
                             )
-                            viewModel.classify(imageProxy, mask = null)
+                            viewModel.classify(
+                                imageProxy =imageProxy,
+                                context =context,
+                                scanType =scanType,
+                                mask = null)
                         }
                     } else {
                         Log.d("MainActivity", "Bounding box percentage is ${bboxPercentage} and is too small to run classification model. Skipping...")
                     }
                 }
-            },
             }
-
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            val uiStateQa by viewModel.uiStateQa.collectAsStateWithLifecycle()
 
             LaunchedEffect(uiState.errorMessage) {
                 if (uiState.errorMessage != null) {
