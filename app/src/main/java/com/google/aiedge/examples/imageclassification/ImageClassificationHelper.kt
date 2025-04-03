@@ -243,8 +243,22 @@ class ImageClassificationHelper(
         }
     }
 
-    suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap, rotationDegrees: Int, context: Context, scanType: String)) {
+    suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap?, rotationDegrees: Int, context: Context, scanType: String)) {
         try {
+
+            // APPLY QA mask to image before classification
+            var origMaskedBitmap = bitmap
+            if (mask != null) {
+                try {
+                    origMaskedBitmap = applyMaskToImage(bitmap, mask)
+                    Log.d("Masking Image", "Mask successfully applied to image. Continuing...")
+                } catch (e: Exception) {
+                    Log.d("Masking Image", "Error when applying mask to image: ${e.message}", e)
+                    Log.d("Masking Image", "Mask dimensions: ${mask.width}x${mask.height}, Image Dimensions: ${bitmap.width},${bitmap.height}")
+                }
+            }
+
+
             withContext(Dispatchers.IO) {
                 if (interpreter == null) return@withContext
                 val startTime = SystemClock.uptimeMillis()
@@ -256,7 +270,7 @@ class ImageClassificationHelper(
                         .add(Rot90Op(rotation)).add(NormalizeOp(127.5f, 127.5f)).build()
 
                 // Preprocess the image and convert it into a TensorImage for classification.
-                val tensorImage = imageProcessor.process(TensorImage.fromBitmap(bitmap))
+                val tensorImage = imageProcessor.process(TensorImage.fromBitmap(origMaskedBitmap))
                 val output = classifyWithTFLite(tensorImage)
 
                 val outputList = output.map {
@@ -518,6 +532,38 @@ class ImageClassificationHelper(
 
         /* HAD TO USE SOFTMAX HERE. SHOULD WORK without softmax in future*/
         return softmax(output)
+    }
+
+    fun applyMaskToImage(image: Bitmap, mask: Bitmap): Bitmap {
+        // Ensure the mask is resized to match the image dimensions
+        val resizedMask = if (mask.width != image.width || mask.height != image.height) {
+            Bitmap.createScaledBitmap(mask, image.width, image.height, true)
+        } else {
+            mask
+        }
+
+        // Create an output bitmap with the same dimensions as the input image
+        val resultBitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+
+        // Create a canvas to draw onto the result bitmap
+        val canvas = Canvas(resultBitmap)
+
+        // Prepare the paint object with PorterDuffXfermode for masking
+        val paint = Paint().apply {
+            isFilterBitmap = true
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) // Retain only where the mask is not transparent
+        }
+
+        // Draw the original image onto the canvas
+        canvas.drawBitmap(image, 0f, 0f, null)
+
+        // Apply the mask using the defined paint with Xfermode
+        canvas.drawBitmap(resizedMask, 0f, 0f, paint)
+
+        // Clear the Xfermode to avoid affecting future operations
+        paint.xfermode = null
+
+        return resultBitmap
     }
 
     /** Load metadata from model*/

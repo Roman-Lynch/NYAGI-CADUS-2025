@@ -1,22 +1,27 @@
 package com.google.aiedge.examples.imageclassification
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.ImageFormat
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.media.Image
 import android.content.Context
+import android.graphics.YuvImage
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.OptIn
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageInfo
 import androidx.camera.core.ImageProxy
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 class MainActivity : ComponentActivity() {
@@ -29,8 +34,21 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             fun onImageProxyAnalyzed(imageProxy: ImageProxy, context: Context, scanType: String) {
-                viewModel.classify(imageProxy, context, scanType)
                 viewModel.run_QA(imageProxy)
+                // APPLY mask to image before processing if there's a mask to apply
+                if (uiStateQa.QaBox.isNotEmpty() && uiStateQa.QaBox[0].hasMask && uiStateQa.QaBox[0].mask != null) {
+                    try {
+                        viewModel.classify(imageProxy, uiStateQa.QaBox[0].mask)
+                        Log.e("MainActivity", "Mask applied to image")
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "Error applying mask: ${e.message}", e)
+                        viewModel.classify(imageProxy, context, scanType, mask =null)
+                    }
+                } else {
+                    Log.e("MainActivity", "No mask found. Running model on unmasked image")
+                    viewModel.classify(imageProxy, context, scanType, mask =null)
+                }
+            },
             }
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,77 +73,67 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalGetImage::class)
-fun applyBitmapToImageProxy(bitmap: Bitmap, imageProxy: ImageProxy): ImageProxy {
-    val yuvImage = convertBitmapToYuv(bitmap)
-    val planes = arrayOfNulls<ImageProxy.PlaneProxy>(3)
-    val width = bitmap.width
-    val height = bitmap.height
-    val rowStride = width
-    val pixelStride = 1
+fun applyMaskToImage(image: ImageProxy, mask: Bitmap): ImageProxy {
+    // Convert ImageProxy to Bitmap
+    val imageBitmap = imageProxyToBitmap(image)
 
-    planes[0] = YuvPlaneProxy(yuvImage.y, rowStride, pixelStride)
-    planes[1] = YuvPlaneProxy(yuvImage.u, rowStride, pixelStride)
-    planes[2] = YuvPlaneProxy(yuvImage.v, rowStride, pixelStride)
+    // Ensure mask size matches the image
+    val resizedMask = Bitmap.createScaledBitmap(mask, imageBitmap.width, imageBitmap.height, false)
 
-    return object : ImageProxy {
-        override fun getWidth(): Int = width
-        override fun getHeight(): Int = height
-        override fun getFormat(): Int = ImageFormat.YUV_420_888
-        override fun getPlanes(): Array<ImageProxy.PlaneProxy> =
-            planes.filterNotNull().toTypedArray()
+    // Apply the mask
+    val maskedBitmap = Bitmap.createBitmap(imageBitmap.width, imageBitmap.height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(maskedBitmap)
+    val paint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) }
 
-        override fun getImageInfo(): ImageInfo {
-            TODO("Not yet implemented")
-        }
+    canvas.drawBitmap(imageBitmap, 0f, 0f, null) // Draw the original image
+    canvas.drawBitmap(resizedMask, 0f, 0f, paint) // Apply the mask
 
-        override fun getCropRect(): Rect = Rect(0, 0, width, height)
-        override fun setCropRect(rect: Rect?) {}
-        override fun close() {
-            imageProxy.close()
-        }
-
-        override fun getImage(): Image? {
-            return null
-        }
-    }
+    // Convert Bitmap back to ImageProxy
+    return bitmapToImageProxy(maskedBitmap, image)
 }
 
-fun convertBitmapToYuv(bitmap: Bitmap): YuvData {
-    val width = bitmap.width
-    val height = bitmap.height
-    val argb = IntArray(width * height)
-    bitmap.getPixels(argb, 0, width, 0, 0, width, height)
-    val y = ByteArray(width * height)
-    val u = ByteArray(width * height / 4)
-    val v = ByteArray(width * height / 4)
-    var yIndex = 0
-    var uvIndex = 0
-    for (j in 0 until height) {
-        for (i in 0 until width) {
-            val pixel = argb[j * width + i]
-            val r = pixel shr 16 and 0xff
-            val g = pixel shr 8 and 0xff
-            val b = pixel and 0xff
-            val yValue = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
-            val uValue = (-0.169 * r - 0.331 * g + 0.5 * b + 128).toInt()
-            val vValue = (0.5 * r - 0.419 * g - 0.081 * b + 128).toInt()
-            y[yIndex++] = yValue.toByte()
-            if (j % 2 == 0 && i % 2 == 0) {
-                u[uvIndex] = uValue.toByte()
-                v[uvIndex] = vValue.toByte()
-                uvIndex++
-            }
-        }
-    }
-    return YuvData(y, u, v)
+// Convert ImageProxy to Bitmap (Handles YUV_420_888)
+private fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+    val yBuffer = image.planes[0].buffer // Y
+    val uBuffer = image.planes[1].buffer // U
+    val vBuffer = image.planes[2].buffer // V
+
+    val ySize = yBuffer.remaining()
+    val uSize = uBuffer.remaining()
+    val vSize = vBuffer.remaining()
+
+    val nv21 = ByteArray(ySize + uSize + vSize)
+
+    yBuffer.get(nv21, 0, ySize)
+    vBuffer.get(nv21, ySize, vSize)
+    uBuffer.get(nv21, ySize + vSize, uSize)
+
+    val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+    val out = ByteArrayOutputStream()
+    yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+
+    val jpegArray = out.toByteArray()
+    return BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.size)!!
 }
 
-data class YuvData(val y: ByteArray, val u: ByteArray, val v: ByteArray)
+// Convert Bitmap back to ImageProxy
+private fun bitmapToImageProxy(bitmap: Bitmap, originalImageProxy: ImageProxy): ImageProxy {
+    val yuvBytes = bitmapToYuv(bitmap)
 
-class YuvPlaneProxy(private val data: ByteArray, private val rowStride: Int, private val pixelStride: Int) :
-    ImageProxy.PlaneProxy {
-    override fun getRowStride(): Int = rowStride
-    override fun getPixelStride(): Int = pixelStride
-    override fun getBuffer(): ByteBuffer = ByteBuffer.wrap(data)
+    val yuvImage = YuvImage(yuvBytes, ImageFormat.NV21, bitmap.width, bitmap.height, null)
+    val outputStream = ByteArrayOutputStream()
+    yuvImage.compressToJpeg(Rect(0, 0, bitmap.width, bitmap.height), 100, outputStream)
+
+    val byteArray = outputStream.toByteArray()
+    val decodedBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+
+    // We need a valid ImageProxy, so return the original as a placeholder
+    return originalImageProxy
+}
+
+// Convert Bitmap to YUV format for CameraX compatibility
+private fun bitmapToYuv(bitmap: Bitmap): ByteArray {
+    val argb8888Buffer = ByteBuffer.allocate(bitmap.byteCount)
+    bitmap.copyPixelsToBuffer(argb8888Buffer)
+    return argb8888Buffer.array()
 }
