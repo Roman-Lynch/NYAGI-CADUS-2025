@@ -1,12 +1,10 @@
 package com.google.aiedge.examples.imageclassification.pages
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -24,7 +22,8 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.Theme
-import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.navigation.Pages
@@ -60,14 +59,14 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
 //        modifier = Modifier
 //            .size(300.dp)
 //    )
-    Box(Modifier
-        .height(300.dp)
-        .width(300.dp)
-        .clip(RoundedCornerShape(10.dp))
-        .background(Theme.Purple)
-        .paint(painter, contentScale = ContentScale.FillBounds)
-        .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)
-        )
+    Box(
+        Modifier
+            .height(300.dp)
+            .width(300.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Theme.Purple)
+            .paint(painter, contentScale = ContentScale.FillBounds)
+            .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)),
     ) {
         CameraButton(onClick = { mainViewModel.pushPage(Pages.Scan) })
         Box(
@@ -75,7 +74,7 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel) {
                 .fillMaxWidth()
                 .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)),
 
-        ){
+            ){
             Text("Test text String")
         }
     }
@@ -93,8 +92,23 @@ fun OptionsGrid(){
 // modifier here is standard modifier that applies to every page
 @Composable
 fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, mainViewModel: MainViewModel) {
-    Column(modifier = modifier) {
-//        OptionsGrid()
-        SelectorOption("Breast", mainViewModel)
+    val configuration = LocalConfiguration.current
+    when (configuration.orientation) {
+        Configuration.ORIENTATION_LANDSCAPE -> {
+            Row(modifier = modifier) {
+                SelectorOption("Breast", mainViewModel)
+            }
+        }
+        Configuration.ORIENTATION_PORTRAIT -> {
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally,
+
+            ) {
+                SelectorOption("Breast", mainViewModel)
+            }
+        }
     }
+
 }
