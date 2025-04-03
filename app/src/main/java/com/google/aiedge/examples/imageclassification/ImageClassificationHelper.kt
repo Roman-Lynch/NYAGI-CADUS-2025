@@ -601,7 +601,7 @@ class ImageClassificationHelper(
     }
 
     enum class Model(val fileName: String) {
-        EfficientNet2("efficientnet_lite2.tflite"), EfficientNet("effecientnet.tflite"), ResNet("resnet_model.tflite"), ResNetKR("resnetkr.tflite");
+       EfficientNet("efficientnet.tflite");
     }
 
     enum class QaModel(val fileName: String) {
