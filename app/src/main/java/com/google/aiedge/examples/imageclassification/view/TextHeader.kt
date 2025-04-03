@@ -24,12 +24,12 @@ fun TextHeader(name:String){
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
-            AsyncImage(
-                model = toAndroidPath("Icons/Help.png"),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(50.dp)
-            )
+//            AsyncImage(
+//                model = toAndroidPath("Icons/Help.png"),
+//                contentDescription = null,
+//                modifier = Modifier
+//                    .size(50.dp)
+//            )
 
         }
         ContentDivider()
