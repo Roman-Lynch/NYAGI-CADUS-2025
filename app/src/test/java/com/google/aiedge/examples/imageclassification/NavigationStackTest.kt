@@ -1,7 +1,7 @@
 package com.google.aiedge.examples.imageclassification
 
 import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
-import com.google.aiedge.examples.imageclassification.view.Pages
+import com.google.aiedge.examples.imageclassification.navigation.Pages
 import org.junit.Test
 
 class NavigationStackTest {
@@ -9,41 +9,27 @@ class NavigationStackTest {
     @Test
     fun testNavigationStack() {
 
-        var counter = 0
-        var lastPage: Pages? = null
+        val stack = NavigationStack(Pages.ScanType)
 
-        fun setPageOnChange(page: Pages) {
-            lastPage = page
-            counter++
-        }
-
-        val stack = NavigationStack(::setPageOnChange, Pages.ScanType)
-        assert(counter == 0)
-        assert(lastPage == null)
+        assert(stack.getCurrentPage() == Pages.ScanType)
 
         stack.push(Pages.Settings)
-        assert(counter == 1)
-        assert(lastPage == Pages.Settings)
+        assert(stack.getCurrentPage() == Pages.Settings)
 
         stack.push(Pages.BodyRegions)
-        assert(counter == 2)
-        assert(lastPage == Pages.BodyRegions)
+        assert(stack.getCurrentPage() == Pages.BodyRegions)
 
         stack.pop()
-        assert(counter == 3)
-        assert(lastPage == Pages.Settings)
+        assert(stack.getCurrentPage() == Pages.Settings)
 
         stack.push(Pages.Scan)
-        assert(counter == 4)
-        assert(lastPage == Pages.Scan)
+        assert(stack.getCurrentPage() == Pages.Scan)
 
         stack.pop()
-        assert(counter == 5)
-        assert(lastPage == Pages.Settings)
+        assert(stack.getCurrentPage() == Pages.Settings)
 
         stack.pop()
-        assert(counter == 6)
-        assert(lastPage == Pages.ScanType)
+        assert(stack.getCurrentPage() == Pages.ScanType)
 
         assert(stack.isEmpty())
     }

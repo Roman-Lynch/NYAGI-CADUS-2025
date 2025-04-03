@@ -2,6 +2,7 @@ package com.google.aiedge.examples.imageclassification.data;
 
 import FileManager
 import android.content.Context
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import org.json.JSONArray
 import org.json.JSONObject
@@ -40,7 +41,9 @@ class GalleryImages(val context: Context) {
         }
     }
 
-    private fun addImage(galleryImage: GalleryImage, imageProxy: ImageProxy) {
+    fun addImage(galleryImage: GalleryImage, imageProxy: ImageProxy) {
+
+        Log.d("Main Activity", "Saved image to local filesystem")
 
         val newImageName = galleryImage.scanID.toString()
         val newImageFile: File = fileManager.getOrCreateFile(imagesDirectoriesPath, newImageName, "") ?: throw CouldNotAddImageException()

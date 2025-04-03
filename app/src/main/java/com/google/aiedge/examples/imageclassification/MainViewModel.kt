@@ -107,25 +107,14 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
      *  @param imageProxy contain `imageBitMap` and imageInfo as `image rotation degrees`.
      *
      */
-    fun classify(imageProxy: ImageProxy) {
+    fun classify(imageProxy: ImageProxy, context: Context, scanType: String) {
         classificationJob = viewModelScope.launch {
             imageClassificationHelper.classify(
-                imageProxy.toBitmap(),
-                imageProxy.imageInfo.rotationDegrees,
+                imageProxy = imageProxy,
+                context = context,
+                scanType = scanType
             )
             imageProxy.close()
-        }
-    }
-
-    /** Start classify an image.
-     *  @param bitmap Tries to make a new bitmap based on the dimensions of this bitmap,
-     *  setting the new bitmap's config to Bitmap.Config.ARGB_8888
-     *  @param rotationDegrees to correct the rotationDegrees during classification
-     */
-    fun classify(bitmap: Bitmap, rotationDegrees: Int) {
-        viewModelScope.launch {
-            val argbBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-            imageClassificationHelper.classify(argbBitmap, rotationDegrees)
         }
     }
 
