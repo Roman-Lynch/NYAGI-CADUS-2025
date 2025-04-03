@@ -9,9 +9,9 @@
     <string name="gallery">Galería</string>
     <string name="ok">ok</string>
     <string name="go_back">Volver</string>
-    <string name="settings">Ajustes</string>
+    <string name="settings">Configuraciónes</string>
     <string name="language">Idioma</string>
-    <string name="rotate_screen">Girar pantalla</string>
+    <string name="rotate_screen">Gire la pantalla</string>
     <string name="no_camera_permissions">Sin permisos de cámara</string>
-    <string name="enable_camera_permissions_alert">Debe habilitar los permisos de la cámara en la configuración de su dispositivo para utilizar esta página</string>
+    <string name="enable_camera_permissions_alert">Habilite los permisos de la cámara para utilizar esta página.</string>
 </resources>
