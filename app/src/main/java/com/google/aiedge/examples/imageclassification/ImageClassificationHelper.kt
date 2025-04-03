@@ -2,6 +2,12 @@ package com.google.aiedge.examples.imageclassification
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.RectF
 import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.util.Log
@@ -47,8 +53,16 @@ class ImageClassificationHelper(
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
-        screenWidth = displayMetrics.widthPixels
-        screenHeight = displayMetrics.heightPixels
+
+        // FORCE screen dimensions to always be horizontal
+        if (displayMetrics.widthPixels < displayMetrics.heightPixels) {
+            screenHeight = displayMetrics.widthPixels
+            screenWidth = displayMetrics.heightPixels
+        }
+        else {
+            screenWidth = displayMetrics.widthPixels
+            screenHeight = displayMetrics.heightPixels
+        }
 
         Log.i(TAG, "Screen dimensions: $screenWidth x $screenHeight")
     }
@@ -77,7 +91,7 @@ class ImageClassificationHelper(
         private const val TAG = "ImageClassification"
 
         val DEFAULT_MODEL = Model.EfficientNet
-        val DEFAULT_QA_MODEL = QaModel.QaYOLO
+        val DEFAULT_QA_MODEL = QaModel.QaYOLO160
         val DEFAULT_DELEGATE = Delegate.CPU
         const val DEFAULT_RESULT_COUNT = 1
 
@@ -184,8 +198,6 @@ class ImageClassificationHelper(
             withContext(Dispatchers.IO) {
                 if (qa_interpreter == null) return@withContext
                 val startTime = SystemClock.uptimeMillis()
-
-                val rotation = -rotationDegrees / 90
 
                 // Store the original bitmap dimensions before any processing
                 val originalBitmapWidth = bitmap.width
@@ -309,77 +321,184 @@ class ImageClassificationHelper(
         Log.i(TAG, "YOLO detection output: ${bestDetection}")
 
         if (bestDetection != null) {
-            val bbox = bestDetection.bbox // YOLO output is normalized or relative to model input size
+            val bbox = bestDetection.bbox // YOLO output is normalized (0-1)
             val mask = bestDetection.processedMask
 
             val tensorHeight = tensorImage.height
             val tensorWidth = tensorImage.width
-            val modelWidth = 640f
-            val modelHeight = 640f
 
+            // Log original input information for debugging
+            Log.d(TAG, "Original bitmap: $originalBitmapWidth x $originalBitmapHeight")
             Log.d(TAG, "Tensor dimensions: $tensorWidth x $tensorHeight")
+            Log.d(TAG, "Screen dimensions: $screenWidth x $screenHeight")
+            Log.d(TAG, "YOLO bbox (normalized): ${bbox.joinToString()}")
 
-            // YOLO output is assumed to be (cx, cy, w, h)
-            val cx = bbox[0] * screenWidth // Convert normalized to absolute
-            val cy = bbox[1] * screenHeight
-            val w = bbox[2] * screenWidth
-            val h = bbox[3] * screenHeight
-
-            // Convert to (x_min, y_min, x_max, y_max)
-            val xMin = cx - (w / 2)
-            val xMax = cx + (w / 2)
-            val yMin = cy - (h / 2)
-            val yMax = cy + (h / 2)
-
-            // Calculate scaling factors based on whether to scale to screen or original image
+            // Calculate the scaling factors between tensor and target dimensions
             val targetWidth: Int
             val targetHeight: Int
+            val scaleX: Float
+            val scaleY: Float
 
             if (options.scaleToScreen) {
                 // Scale to screen dimensions
                 targetWidth = screenWidth
                 targetHeight = screenHeight
-
-                Log.d(TAG, "Scaling mask to screen dimensions: ${targetWidth}x${targetHeight}")
+                scaleX = screenWidth.toFloat() / tensorWidth
+                scaleY = screenHeight.toFloat() / tensorHeight
+                Log.d(TAG, "Scaling to screen: $scaleX x $scaleY")
             } else {
-                // Scale to original bitmap dimensions (not tensor dimensions)
+                // Scale to original bitmap dimensions
                 targetWidth = originalBitmapWidth
                 targetHeight = originalBitmapHeight
-
-                Log.d(TAG, "Scaling mask to original bitmap dimensions: ${targetWidth}x${targetHeight}")
+                scaleX = originalBitmapWidth.toFloat() / tensorWidth
+                scaleY = originalBitmapHeight.toFloat() / tensorHeight
+                Log.d(TAG, "Scaling to original: $scaleX x $scaleY")
             }
 
-            // Scale bounding box
-            val scaledBBox = floatArrayOf(
-                xMin,
-                xMax,
-                yMin,
-                yMax
-            )
+            // Account for padding if image was letterboxed when fed to the model
+            // (common in YOLO preprocessing to maintain aspect ratio)
+            val originalAspectRatio = originalBitmapWidth.toFloat() / originalBitmapHeight
+            val tensorAspectRatio = tensorWidth.toFloat() / tensorHeight
+
+            // Adjustment factors for letterboxing
+            var xOffset = 0f
+            var yOffset = 0f
+            var xScale = 1f
+            var yScale = 1f
+
+            if (originalAspectRatio > tensorAspectRatio) {
+                // Original image was wider, meaning vertical letterboxing in tensor
+                yScale = tensorAspectRatio / originalAspectRatio
+                yOffset = (1f - yScale) / 2f
+                Log.d(TAG, "Vertical letterboxing detected, yScale=$yScale, yOffset=$yOffset")
+            } else if (originalAspectRatio < tensorAspectRatio) {
+                // Original image was taller, meaning horizontal letterboxing in tensor
+                xScale = originalAspectRatio / tensorAspectRatio
+                xOffset = (1f - xScale) / 2f
+                Log.d(TAG, "Horizontal letterboxing detected, xScale=$xScale, xOffset=$xOffset")
+            }
+
+            // Denormalize and adjust for letterboxing
+            // YOLO output is typically (cx, cy, w, h) normalized
+            val normalizedCX = bbox[0]
+            val normalizedCY = bbox[1]
+            val normalizedW = bbox[2]
+            val normalizedH = bbox[3]
+
+            // Adjust for letterboxing in normalized space
+            val adjustedCX = (normalizedCX - xOffset) / xScale
+            val adjustedCY = (normalizedCY - yOffset) / yScale
+            val adjustedW = normalizedW / xScale
+            val adjustedH = normalizedH / yScale
+
+            // Now scale to target dimensions
+            val cx = adjustedCX * targetWidth
+            val cy = adjustedCY * targetHeight
+            val w = adjustedW * targetWidth
+            val h = adjustedH * targetHeight
+
+            // Convert center-width-height to corner coordinates
+            val xMin = Math.max(0f, cx - (w / 2))
+            val yMin = Math.max(0f, cy - (h / 2))
+            val xMax = Math.min(targetWidth.toFloat(), cx + (w / 2))
+            val yMax = Math.min(targetHeight.toFloat(), cy + (h / 2))
+
+            // Final bounding box in absolute coordinates
+            val scaledBBox = floatArrayOf(xMin, xMax, yMin, yMax)
+
+            Log.d(TAG, "Final scaled bbox: ${scaledBBox.joinToString()}")
 
             // Scale the mask if it exists
             if (mask != null) {
-                // Create a properly scaled mask
+                // For the mask, we need to handle potential letterboxing too
+                // First, determine what portion of the mask corresponds to the actual image
+                val effectiveMaskWidth: Int
+                val effectiveMaskHeight: Int
+                var cropX = 0
+                var cropY = 0
+                var cropWidth = mask.width
+                var cropHeight = mask.height
+
+                if (originalAspectRatio > tensorAspectRatio) {
+                    // Vertical letterboxing case
+                    effectiveMaskHeight = (mask.height * yScale).toInt()
+                    cropY = ((mask.height - effectiveMaskHeight) / 2)
+                    cropHeight = effectiveMaskHeight
+                } else if (originalAspectRatio < tensorAspectRatio) {
+                    // Horizontal letterboxing case
+                    effectiveMaskWidth = (mask.width * xScale).toInt()
+                    cropX = ((mask.width - effectiveMaskWidth) / 2)
+                    cropWidth = effectiveMaskWidth
+                }
+
+                // Crop the letterboxed regions if needed
+                val croppedMask = if (cropX > 0 || cropY > 0) {
+                    Bitmap.createBitmap(mask, cropX, cropY, cropWidth, cropHeight)
+                } else {
+                    mask
+                }
+
+                // Now scale the mask to target dimensions
                 val scaledMask = Bitmap.createScaledBitmap(
-                    mask,
+                    croppedMask,
                     targetWidth,
                     targetHeight,
                     true
                 )
 
-                Log.d(TAG, "Scaled Mask Dimensions: ${scaledMask.width}x${scaledMask.height}")
-                Log.d(TAG, "Scaled Bounding Box: ${scaledBBox.sliceArray(0 until 4).joinToString(", ")}")
+                // MODIFY: Create a new bitmap and only keep mask values inside the bounding box
+                val maskedBitmap = Bitmap.createBitmap(
+                    targetWidth,
+                    targetHeight,
+                    Bitmap.Config.ARGB_8888
+                )
 
-                return BboxMaskPair(scaledBBox, scaledMask)
+                val canvas = Canvas(maskedBitmap)
+
+                // Clear everything with transparent pixels
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+                // Create a paint with porter-duff to only copy pixels from the source
+                val paint = Paint().apply {
+                    xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+                }
+
+                // First create and draw a clipping rectangle for the bounding box
+                val rect = RectF(xMin, yMin, xMax, yMax)
+
+                // Save the canvas state
+                canvas.save()
+
+                // Apply clipping to the bounding box
+                canvas.clipRect(rect)
+
+                // Draw the scaled mask (only inside the clipped area)
+                canvas.drawBitmap(scaledMask, 0f, 0f, paint)
+
+                // Restore the canvas state
+                canvas.restore()
+
+                Log.d(TAG, "Original mask: ${mask.width}x${mask.height}")
+                Log.d(TAG, "Cropped mask: ${croppedMask.width}x${croppedMask.height}")
+                Log.d(TAG, "Scaled mask: ${scaledMask.width}x${scaledMask.height}")
+                Log.d(TAG, "Masked within bbox: ${xMin},${yMin} - ${xMax},${yMax}")
+
+                return BboxMaskPair(scaledBBox, maskedBitmap)
             } else {
-                Log.d(TAG, "Bounding box was found, but no mask was found...")
-                return BboxMaskPair(FloatArray(0), Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888))
+                Log.d(TAG, "No mask detected")
+                return BboxMaskPair(
+                    scaledBBox,
+                    Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+                )
             }
         } else {
             val targetWidth = if (options.scaleToScreen) screenWidth else originalBitmapWidth
             val targetHeight = if (options.scaleToScreen) screenHeight else originalBitmapHeight
 
-            return BboxMaskPair(FloatArray(0), Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)) // Return empty if no detection
+            return BboxMaskPair(
+                FloatArray(0),
+                Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+            )
         }
     }
 
@@ -440,7 +559,7 @@ class ImageClassificationHelper(
     }
 
     enum class QaModel(val fileName: String) {
-        QaYOLO("QaModel.tflite");
+        QaYOLO160("QaModel160.tflite");
     }
 
     data class QaResults(

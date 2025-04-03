@@ -62,7 +62,7 @@ fun BreastCameraPage(
         var box = false
         var boundingbox = FloatArray(0)
         var maskBool = false
-        var mask = Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
+        var mask = Bitmap.createBitmap(320, 320, Bitmap.Config.ARGB_8888)
 
         // LOG QA Box Response
         if (!qa_box.isEmpty()) {
