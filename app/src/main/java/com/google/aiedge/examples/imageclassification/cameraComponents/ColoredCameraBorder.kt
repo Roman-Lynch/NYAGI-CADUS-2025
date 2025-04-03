@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.nativeCanvas
 import kotlin.math.max
 import kotlin.math.min
 
+val SHOW_MASK = false
+
 @Composable
 fun ColoredCameraBorder(
     boxColor: Color,
@@ -110,7 +112,7 @@ fun ColoredCameraBorder(
     )
 
     // Visualize the mask if it exists
-    if (maskExists) {
+    if (maskExists && SHOW_MASK) {
         Log.d("DrawMask", "Mask received with size [${mask.width}, ${mask.height}]")
 
         Image(
