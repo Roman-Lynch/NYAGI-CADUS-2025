@@ -19,7 +19,7 @@ import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Preview
 @Composable
-fun GalleryPage(currentLanguage: Language = Language.ENGLISH) {
+fun GalleryPage(currentLanguage: Language = Language.ENGLISH, modifier: Modifier) {
 
     val context = LocalContext.current
     var searchText: String by remember { mutableStateOf("") }

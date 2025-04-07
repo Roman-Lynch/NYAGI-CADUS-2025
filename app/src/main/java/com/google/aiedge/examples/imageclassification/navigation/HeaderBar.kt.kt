@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.aiedge.examples.imageclassification.MainViewModel
+import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.HeaderBarText
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.language.SettingsPageText
@@ -29,10 +30,18 @@ fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel) {
             onClick = { mainViewModel.popPage() },
             semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
         )
-        HeaderBarButton(
-            filePath = "Icons/GearIcon.png",
-            onClick = { mainViewModel.pushPage(Pages.Settings) },
-            semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
-        )
+        // push gallery and settings icons to side
+        Row(){
+            HeaderBarButton(
+                filePath = "Icons/GalleryIcon.png",
+                onClick = {mainViewModel.pushPage(Pages.Gallery)},
+                semanticsLabel = GalleryText.getGalleryText(LocalContext.current, currentLanguage)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            HeaderBarButton(
+                filePath = "Icons/GearIcon.png",
+                onClick = { mainViewModel.pushPage(Pages.Settings) },
+                semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage))
+        }
     }
 }
