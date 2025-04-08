@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     if (bboxPercentage >= BBOX_SIZE_PERCENT_THRESH) {
                         Log.d("MainActivity", "Bounding box percentage is ${bboxPercentage} and is large enough to run classification model. Continuing...")
                         // APPLY mask to image before processing if there's a mask to apply
-                        if (uiStateQa.QaBox[0].hasMask && uiStateQa.QaBox[0].mask != null) {
+                        if (uiStateQa.QaBox[0].hasMask && uiStateQa.QaBox[0].mask != null && bboxPercentage > BBOX_SIZE_PERCENT_THRESH) {
                             try {
                                 viewModel.classify(
                                     imageProxy =imageProxy,

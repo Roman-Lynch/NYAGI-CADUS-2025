@@ -34,7 +34,8 @@ fun ColoredCameraBorder(
     maskExists: Boolean = false,
     mask: Bitmap = Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888),
     screenHeight: Int,
-    screenWidth: Int
+    screenWidth: Int,
+    classification: Boolean
 ) {
     Box(
         modifier = Modifier.fillMaxSize().drawWithContent {
@@ -59,8 +60,10 @@ fun ColoredCameraBorder(
                 val bboxPercentage = (bboxArea.toFloat() / screenArea.toFloat()) * 100
                 val textToDisplay = if (bboxPercentage > 25) {
                     "Confidence: ${"%.2f".format(confidence * 100)}%"
-                } else {
+                } else if (classification == true) {
                     "Size: ${"%.2f".format(bboxPercentage)}%"
+                } else {
+                    "Move closer"
                 }
 
                 Log.d("DrawBbox", "Corrected Bbox - Width: $width, Height: $height")
@@ -93,7 +96,11 @@ fun ColoredCameraBorder(
                             style = android.graphics.Paint.Style.FILL
                         }
 
-                        val textX = x1
+                        // Calculate center position of the bounding box
+                        val centerX = x1 + (width / 2)
+
+                        // Position text centered horizontally over the bbox
+                        val textX = centerX - (textWidth / 2)
                         val textY = y1 - 10
                         val bgRectLeft = textX - padding
                         val bgRectTop = textY - textHeight - padding

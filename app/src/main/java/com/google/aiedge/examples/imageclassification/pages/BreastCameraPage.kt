@@ -24,11 +24,15 @@ import kotlin.math.absoluteValue
 import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.media.Image
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageInfo
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+
+private val BBOX_SIZE_PERCENT_THRESH = 0.25f
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
@@ -64,33 +68,113 @@ fun BreastCameraPage(
         var maskBool = false
         var mask = Bitmap.createBitmap(320, 320, Bitmap.Config.ARGB_8888)
 
-        // LOG QA Box Response
-        if (!qa_box.isEmpty()) {
+        // Default screen dimensions (use context to get fallback values if qa_box is empty)
+        var screenHeight = 0
+        var screenWidth = 0
+
+        // Get the screen dimensions from context as fallback
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        screenHeight = displayMetrics.heightPixels
+        screenWidth = displayMetrics.widthPixels
+
+        // Track if we have a valid bounding box from the current frame
+        var currentFrameHasValidBox = false
+
+        // Process QA Box Response
+        if (qa_box.isNotEmpty()) {
             Log.d("QA BOX", "QA BOX output: [${qa_box[0].x_1}, ${qa_box[0].x_2}, ${qa_box[0].y_1}, ${qa_box[0].y_2}]")
             box = true
             boundingbox = listOf(qa_box[0].x_1, qa_box[0].y_1, qa_box[0].x_2, qa_box[0].y_2).toFloatArray()
             maskBool = true
             mask = qa_box[0].mask
+
+            // Update screen dimensions from qa_box only if it's not empty
+            screenHeight = qa_box[0].screenHeight
+            screenWidth = qa_box[0].screenWidth
+
+            // Check if current box is big enough to be valid
+            val width = (qa_box[0].x_2 - qa_box[0].x_1).absoluteValue
+            val height = (qa_box[0].y_2 - qa_box[0].y_1).absoluteValue
+            val bboxArea = width * height
+            val screenArea = screenWidth * screenHeight
+            val bbox_area = (bboxArea.toFloat() / screenArea.toFloat())
+
+            // Set threshold based on your requirements
+            currentFrameHasValidBox = bbox_area >= BBOX_SIZE_PERCENT_THRESH
+
+            if (!currentFrameHasValidBox) {
+                Log.d("QA BOX", "Box too small for classification")
+            }
         } else {
             Log.d("QA BOX", "QA BOX output is empty")
+            // No box in this frame
+            currentFrameHasValidBox = false
         }
 
-        var highestCategory = "benign"
-        var highestScore = 0.0f
-        for (category in categories) {
-            if (category.score > highestScore) {
-                highestCategory = category.label
-                highestScore = category.score
+        // Only use classification results if we have a valid box in the current frame
+        if (currentFrameHasValidBox && !categories.isEmpty()) {
+            var highestCategory = "benign"
+            var highestScore = 0.0f
+            for (category in categories) {
+                if (category.score > highestScore) {
+                    highestCategory = category.label
+                    highestScore = category.score
+                }
             }
+
+            if (highestScore > 0.0f) {
+                if (highestCategory == "benign") {
+                    ColoredCameraBorder(
+                        Color.Green,
+                        bbox = boundingbox,
+                        maskExists = maskBool,
+                        mask = mask,
+                        confidence = highestScore,
+                        screenHeight = screenHeight,
+                        screenWidth = screenWidth,
+                        classification = true
+                    )
+                } else if (highestCategory == "malignant") {
+                    ColoredCameraBorder(
+                        Color.Red,
+                        bbox = boundingbox,
+                        maskExists = maskBool,
+                        mask = mask,
+                        confidence = highestScore,
+                        screenHeight = screenHeight,
+                        screenWidth = screenWidth,
+                        classification = true
+                    )
+                }
+            } else {
+                // Categories exist but scores are zero - draw gray border
+                ColoredCameraBorder(
+                    Color.Gray,
+                    bbox = boundingbox,
+                    maskExists = maskBool,
+                    mask = mask,
+                    confidence = 0f,
+                    screenHeight = screenHeight,
+                    screenWidth = screenWidth,
+                    classification = false
+                )
+            }
+        } else {
+            // Either no valid box or no categories - draw gray border
+            ColoredCameraBorder(
+                Color.Gray,
+                bbox = boundingbox,
+                maskExists = maskBool,
+                mask = mask,
+                confidence = 0f,
+                screenHeight = screenHeight,
+                screenWidth = screenWidth,
+                classification = false
+            )
         }
-        if (highestScore > .0f) { // change when on phone
-            if (highestCategory == "benign" && box){
-                ColoredCameraBorder(Color.Green, bbox = boundingbox, maskExists = maskBool, mask = mask, confidence = highestScore, screenHeight = qa_box[0].screenHeight, screenWidth = qa_box[0].screenWidth)
-            }
-            if (highestCategory == "malignant" && box) {
-                ColoredCameraBorder(Color.Red, bbox = boundingbox, maskExists = maskBool, mask = mask, confidence = highestScore, screenHeight = qa_box[0].screenHeight, screenWidth = qa_box[0].screenWidth)
-            }
-        }
+
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             RotatePhonePopup("screen-rotate", currentLanguage)
@@ -98,6 +182,7 @@ fun BreastCameraPage(
     }
 
     fun applyBitmapToImageProxy(bitmap: Bitmap, imageProxy: ImageProxy): ImageProxy {
+        // Implementation remains the same
         val yuvImage = convertBitmapToYuv(bitmap)
         val planes = arrayOfNulls<ImageProxy.PlaneProxy>(3)
         val width = bitmap.width
