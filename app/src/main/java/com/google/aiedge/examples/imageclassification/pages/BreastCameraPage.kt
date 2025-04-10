@@ -1,7 +1,11 @@
 package com.google.aiedge.examples.imageclassification.pages
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
 import android.content.Context
 import android.content.res.Configuration
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageProxy
@@ -11,6 +15,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.*
+import com.google.aiedge.examples.imageclassification.MainViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.UiStateQa
@@ -20,6 +25,8 @@ import com.google.aiedge.examples.imageclassification.cameraComponents.ColoredCa
 import com.google.aiedge.examples.imageclassification.cameraComponents.RotatePhonePopup
 import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
+import okhttp3.internal.http2.Header
 import kotlin.math.absoluteValue
 import android.graphics.ImageFormat
 import android.graphics.Rect
@@ -32,6 +39,22 @@ import androidx.camera.core.ImageInfo
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
+class BreastCameraActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val viewModel: MainViewModel by viewModels{ MainViewModel.getFactory(this) }
+
+        setContent {
+            BreastCameraPage(
+                uiState = viewModel.uiState.value,
+                currentLanguage = Language.ENGLISH,
+                modifier = Modifier.fillMaxSize(),
+                onImageAnalyzed = { imageProxy -> Unit },
+                viewModel = viewModel,
+            )
+        }
+    }
+}
 private val BBOX_SIZE_PERCENT_THRESH = 0.25f
 
 @OptIn(ExperimentalGetImage::class)
@@ -42,6 +65,8 @@ fun BreastCameraPage(
     currentLanguage: Language,
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy, Context, String) -> Unit,
+    onImageAnalyzed: (ImageProxy) -> Unit,
+    viewModel: MainViewModel
 ) {
 
     CameraPermissionsAlert(uiState, currentLanguage)
@@ -56,8 +81,7 @@ fun BreastCameraPage(
     }
 
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(),
     ) {
         CameraPreview(onImageAnalyzed = ::androidOnImageAnalyzed)
         val categories = uiState.categories
@@ -188,8 +212,12 @@ fun BreastCameraPage(
 
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            RotatePhonePopup("screen-rotate", currentLanguage)
+            RotatePhonePopup("screen-rotate", currentLanguage, modifier = Modifier.align(Alignment.Center))
         }
+
+        CameraPermissionsAlert(uiState, currentLanguage)
+        HeaderBar(currentLanguage, viewModel, Color.DarkGray.copy(alpha = 0.5f))
+
     }
 
     fun applyBitmapToImageProxy(bitmap: Bitmap, imageProxy: ImageProxy): ImageProxy {

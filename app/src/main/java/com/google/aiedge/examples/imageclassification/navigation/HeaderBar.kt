@@ -3,10 +3,12 @@ package com.google.aiedge.examples.imageclassification.navigation
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Colors
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -18,13 +20,13 @@ import com.google.aiedge.examples.imageclassification.language.SettingsPageText
 import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
-fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel) {
+fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel, color: Color) {
     val configuration = LocalConfiguration.current
     when (configuration.orientation) {
         Configuration.ORIENTATION_LANDSCAPE -> {
             Column (
                 modifier = Modifier
-                    .background(Theme.Teal)
+                    .background(color)
                     .height(configuration.screenHeightDp.dp)
                     .width(80.dp)
                     .padding(10.dp),
@@ -46,11 +48,11 @@ fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel) {
         else -> {
             Row(
                 modifier = Modifier
-                    .background(Theme.Teal)
+                    .background(color)
                     .fillMaxWidth()
                     .height(80.dp)
                     .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 HeaderBarButtonVert(

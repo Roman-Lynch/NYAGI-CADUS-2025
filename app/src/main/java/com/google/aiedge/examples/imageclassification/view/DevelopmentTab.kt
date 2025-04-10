@@ -2,9 +2,12 @@ package com.google.aiedge.examples.imageclassification.view
 
 import android.content.Context
 import android.util.Log
+import android.content.Intent
 import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +44,7 @@ fun DevelopmentScreen(
     }
 
     //HeaderBar(currentLanguage, mainViewModel)
+    HeaderBar(currentLanguage, mainViewModel, Theme.Teal)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
@@ -61,6 +65,17 @@ fun DevelopmentScreen(
                 modifier = Modifier.fillMaxSize(),
                 onImageAnalyzed = onImageProxyAnalyzed
             )
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                val intent = Intent(context, com.google.aiedge.examples.imageclassification.pages.BreastCameraActivity::class.java)
+                context.startActivity(intent)
+            }
+//            BreastCameraPage(
+//                uiState = uiState,
+//                currentLanguage = currentLanguage,
+//                modifier = Modifier.fillMaxWidth(),
+//                onImageAnalyzed = onImageProxyAnalyzed,
+//            )
         }
         Pages.Settings -> {
             SettingsPage(currentLanguage, setLanguage, defaultModifier)
