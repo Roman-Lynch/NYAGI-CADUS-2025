@@ -26,7 +26,6 @@ fun HeaderBarButton(
         modifier = modifier
             .fillMaxHeight()
             .aspectRatio(1.0f)
-            .clip(CircleShape)
             .clickable(onClick = onClick)
             .semantics { contentDescription = semanticsLabel },
     ) {
