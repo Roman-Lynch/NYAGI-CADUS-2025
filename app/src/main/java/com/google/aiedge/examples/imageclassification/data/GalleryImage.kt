@@ -3,7 +3,6 @@ package com.google.aiedge.examples.imageclassification.data
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
-
 class GalleryImage(
     val dateString: String,
     val timeString: String,
@@ -11,31 +10,24 @@ class GalleryImage(
     val label: String,
     val confidence: Double,
     val scanID: UUID,
-    val patientName: String,
+    val patientName: String = "",
 ) {
-
     constructor(json: JSONObject) : this(
-        dateString = json.optString("dateString").takeIf { it.isNotEmpty() }
-            ?: throw JSONException("Missing or invalid 'dateString'"),
-        timeString = json.optString("timeString").takeIf { it.isNotEmpty() }
-            ?: throw JSONException("Missing or invalid 'timeString'"),
-        scanTypeString = json.optString("scanTypeString").takeIf { it.isNotEmpty() }
-            ?: throw JSONException("Missing or invalid 'scanTypeString'"),
-        label = json.optString("label").takeIf { it.isNotEmpty() }
-            ?: throw JSONException("Missing or invalid 'label'"),
-        confidence = json.optDouble("confidence", Double.NaN).takeIf { it.isFinite() }
-            ?: throw JSONException("Missing or invalid 'confidence'"),
+        dateString = json.optString("dateString", ""),
+        timeString = json.optString("timeString", ""),
+        scanTypeString = json.optString("scanTypeString", ""),
+        label = json.optString("label", ""),
+        confidence = json.optDouble("confidence", 0.0),
         scanID = try {
-            UUID.fromString(json.optString("scanID") ?: throw JSONException("Missing 'scanID'"))
-        } catch (e: IllegalArgumentException) {
-            throw JSONException("Invalid 'scanID' format")
+            UUID.fromString(json.optString("scanID"))
+        } catch (e: Exception) {
+            UUID.randomUUID()
         },
-        patientName = json.optString("patientName").takeIf { it.isNotEmpty() }
-            ?: throw JSONException("Missing or invalid 'patientName'")
+        patientName = json.optString("patientName", "")
     )
 
-    fun toJSONObject() {
-        JSONObject().apply {
+    fun toJSONObject(): JSONObject {
+        return JSONObject().apply {
             put("dateString", dateString)
             put("timeString", timeString)
             put("scanTypeString", scanTypeString)

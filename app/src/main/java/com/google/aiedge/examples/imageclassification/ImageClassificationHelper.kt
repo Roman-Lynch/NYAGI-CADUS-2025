@@ -245,7 +245,6 @@ class ImageClassificationHelper(
 
     suspend fun classify(imageProxy: ImageProxy, bitmap: Bitmap, rotationDegrees: Int, context: Context, scanType: String, mask: Bitmap?) {
         try {
-
             // APPLY QA mask to image before classification
             var origMaskedBitmap = bitmap
             if (mask != null) {
@@ -257,7 +256,6 @@ class ImageClassificationHelper(
                     Log.d("Masking Image", "Mask dimensions: ${mask.width}x${mask.height}, Image Dimensions: ${bitmap.width},${bitmap.height}")
                 }
             }
-
 
             withContext(Dispatchers.IO) {
                 if (interpreter == null) return@withContext
@@ -293,7 +291,6 @@ class ImageClassificationHelper(
                 logClassificationResults()
 
                 fun saveImageToGallery() {
-
                     val currentDateTime = LocalDateTime.now()
                     val dateString = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                     val timeString = currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
@@ -303,15 +300,18 @@ class ImageClassificationHelper(
                         dateString = dateString,
                         timeString = timeString,
                         scanTypeString = scanType,
-                        label = categories[0].label,
-                        confidence = categories[0].score.toDouble(),
+                        label = if (categories.isNotEmpty()) categories[0].label else "unknown",
+                        confidence = if (categories.isNotEmpty()) categories[0].score.toDouble() else 0.0,
                         scanID = UUID.randomUUID(),
                         patientName = "",
                     )
-                    galleryImages.addImage(galleryImage = imageMetadata, imageProxy = imageProxy)
+
+                    // Use the bitmap directly instead of ImageProxy
+                    galleryImages.addImage(imageMetadata, origMaskedBitmap)
                 }
+
                 val shouldSaveToGallery = true
-                //if (shouldSaveToGallery) saveImageToGallery()
+                if (shouldSaveToGallery) saveImageToGallery()
 
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))
@@ -320,6 +320,9 @@ class ImageClassificationHelper(
         } catch (e: Exception) {
             Log.e(TAG, "Image classification error occurred: ${e.message}", e)
             _error.emit(e)
+        } finally {
+            // Ensure ImageProxy is closed
+            imageProxy.close()
         }
     }
 

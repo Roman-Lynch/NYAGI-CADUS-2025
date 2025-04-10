@@ -33,7 +33,7 @@ class FileManager(private val context: Context) {
     }
 
     fun writeFile(file: File, content: String) {
-        Log.d("MainActivity", "Attempting to write file: ${file.name} $content")
+        Log.d("MainActivity", "Saving image to: ${file.absolutePath} with content: $content")
         file.writeText(content)
     }
 
