@@ -127,7 +127,7 @@ fun BreastCameraPage(
             if (highestScore > 0.0f) {
                 if (highestCategory == "benign") {
                     ColoredCameraBorder(
-                        Color.Green,
+                        Color.Yellow,
                         bbox = boundingbox,
                         maskExists = maskBool,
                         mask = mask,
@@ -139,6 +139,17 @@ fun BreastCameraPage(
                 } else if (highestCategory == "malignant") {
                     ColoredCameraBorder(
                         Color.Red,
+                        bbox = boundingbox,
+                        maskExists = maskBool,
+                        mask = mask,
+                        confidence = highestScore,
+                        screenHeight = screenHeight,
+                        screenWidth = screenWidth,
+                        classification = true
+                    )
+                } else {
+                    ColoredCameraBorder(
+                        Color.Green,
                         bbox = boundingbox,
                         maskExists = maskBool,
                         mask = mask,
