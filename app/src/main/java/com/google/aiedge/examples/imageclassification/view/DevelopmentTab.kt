@@ -40,7 +40,7 @@ fun DevelopmentScreen(
         Log.d("LanguageDebug", "Language loaded: ${currentLanguage.name}")
     }
 
-    HeaderBar(currentLanguage, mainViewModel)
+    //HeaderBar(currentLanguage, mainViewModel)
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
