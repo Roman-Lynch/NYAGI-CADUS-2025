@@ -67,7 +67,8 @@ class GalleryImages(val context: Context) {
         Log.d("GalleryImages", "Saving image to local filesystem...")
 
         val timestamp = "${galleryImage.dateString}_${galleryImage.timeString.replace(":", "-")}"
-        val newImageName = "$timestamp.jpg"
+//        val newImageName = "$timestamp.jpg"
+        val newImageName = "${galleryImage.scanID}.jpg"
         val newImageFile: File = fileManager.getOrCreateFile(imagesDirectoriesPath, newImageName, "")
             ?: throw CouldNotAddImageException()
 
@@ -106,5 +107,26 @@ class GalleryImages(val context: Context) {
 
     fun getImages(): List<GalleryImage> {
         return imagesList
+    }
+
+    fun deleteImage(scanID: UUID) {
+        // Find the image to delete
+        val imageToDelete = imagesList.find { it.scanID == scanID } ?: return
+
+        // Delete the physical file
+        val fileName = "${scanID}.jpg"
+        val file = File(imagesDirectory, fileName)
+        if (file.exists()) {
+            file.delete()
+        }
+
+        // Remove from the in-memory list
+        imagesList.removeIf { it.scanID == scanID }
+
+        // Update the JSON file
+        val galleryJSON = createGalleryJSON()
+        fileManager.writeFile(gallery, galleryJSON.toString())
+
+        Log.d("GalleryImages", "Deleted image with ID: $scanID")
     }
 }
