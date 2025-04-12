@@ -42,12 +42,12 @@ fun HeaderBar(
             ) {
                 HeaderBarButtonHor(
                     filePath = "Icons/BackIcon.png",
-                    onClick = { mainViewModel.popPage() },
+                    onClick = onClickArrow,
                     semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
                 )
                 HeaderBarButtonHor(
                     filePath = "Icons/GearIcon.png",
-                    onClick = { mainViewModel.pushPage(Pages.Settings) },
+                    onClick = onClickSettings,
                     semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
                 )
             }
