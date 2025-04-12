@@ -28,7 +28,8 @@ import com.google.aiedge.examples.imageclassification.language.Language
 @Composable
 fun RotatePhonePopup(
     optionName: String,
-    currentLanguage: Language
+    currentLanguage: Language,
+    modifier: Modifier,
 ) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -38,14 +39,13 @@ fun RotatePhonePopup(
         contentScale = ContentScale.FillBounds
     )
     Box(
-        modifier = Modifier
+        modifier = modifier
             .height(300.dp)
             .width(300.dp)
             .padding(25.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(Color.Black.copy(alpha = 0.80f), shape = RoundedCornerShape(25.dp))
             .paint(painter, alignment = Alignment.TopCenter, colorFilter = ColorFilter.tint(Color.White)),
-        contentAlignment = Alignment.Center
     ) {
         Text(
             text = CameraText.getRotateScreenText(LocalContext.current, currentLanguage),

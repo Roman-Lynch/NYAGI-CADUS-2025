@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.google.aiedge.examples.imageclassification.NoCameraPermissionsAlert
@@ -13,11 +14,11 @@ import com.google.aiedge.examples.imageclassification.language.Language
 @Composable
 fun CameraPermissionsAlert(uiState: UiState,currentLanguage: Language) {
 
-    var showAlert by remember { mutableStateOf(true) }
+    var showAlert by remember { mutableStateOf(false) }
 
     val cameraPermissionsRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean -> if (isGranted) showAlert = false }
+    ) { isGranted: Boolean -> if (!isGranted) showAlert = true }
 
     if (showAlert) NoCameraPermissionsAlert({showAlert = false}, currentLanguage)
 
