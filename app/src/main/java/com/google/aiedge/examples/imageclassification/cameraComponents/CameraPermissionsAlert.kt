@@ -14,11 +14,11 @@ import com.google.aiedge.examples.imageclassification.language.Language
 @Composable
 fun CameraPermissionsAlert(uiState: UiState,currentLanguage: Language) {
 
-    var showAlert by remember { mutableStateOf(true) }
+    var showAlert by remember { mutableStateOf(false) }
 
     val cameraPermissionsRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean -> if (isGranted) showAlert = false }
+    ) { isGranted: Boolean -> if (!isGranted) showAlert = true }
 
     if (showAlert) NoCameraPermissionsAlert({showAlert = false}, currentLanguage)
 

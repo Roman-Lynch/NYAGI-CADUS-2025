@@ -216,8 +216,7 @@ fun BreastCameraPage(
         }
 
         CameraPermissionsAlert(uiState, currentLanguage)
-        HeaderBar(currentLanguage, viewModel, Color.DarkGray.copy(alpha = 0.5f))
-
+        HeaderBar(currentLanguage, viewModel, Color.DarkGray.copy(alpha = 0.75f))
     }
 
     fun applyBitmapToImageProxy(bitmap: Bitmap, imageProxy: ImageProxy): ImageProxy {
