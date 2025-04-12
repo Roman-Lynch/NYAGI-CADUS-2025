@@ -24,82 +24,20 @@ import java.nio.ByteBuffer
 import kotlin.math.max
 import kotlin.math.min
 
-private val BBOX_SIZE_PERCENT_THRESH = 0.25f
+import com.google.aiedge.examples.imageclassification.onImageProxyAnalyzed
+
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        val viewModel: MainViewModel by viewModels { MainViewModel.getFactory(this) }
+        val viewModel: MainViewModel by viewModels { MainViewModel.getFactory(application) }
 
         setContent {
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val uiStateQa by viewModel.uiStateQa.collectAsStateWithLifecycle()
-
-            fun onImageProxyAnalyzed(imageProxy: ImageProxy, context: Context, scanType: String) {
-
-                viewModel.run_QA(imageProxy)
-                if (uiStateQa.QaBox.isNotEmpty()) {
-                    val bbox = uiStateQa.QaBox
-
-                    val x1 = min(bbox[0].x_1, bbox[0].x_2)
-                    val y1 = min(bbox[0].y_1, bbox[0].y_2)
-                    val x2 = max(bbox[0].x_1, bbox[0].x_2)
-                    val y2 = max(bbox[0].y_1, bbox[0].y_2)
-
-                    // Calculate width and height for the bounding box
-                    val width = x2 - x1
-                    val height = y2 - y1
-
-                    // Calculate bounding box area and screen area
-                    val bboxArea = width * height
-                    val screenArea = bbox[0].screenWidth * bbox[0].screenHeight
-                    val bboxPercentage = (bboxArea.toFloat() / screenArea.toFloat())
-
-                    // ONLY run classification model if the bboxPercentage > BBOX_SIZE_PERCENT_THRESH
-                    if (bboxPercentage >= BBOX_SIZE_PERCENT_THRESH) {
-                        Log.d("MainActivity", "Bounding box percentage is ${bboxPercentage} and is large enough to run classification model. Continuing...")
-                        // APPLY mask to image before processing if there's a mask to apply
-                        if (uiStateQa.QaBox[0].hasMask && uiStateQa.QaBox[0].mask != null && bboxPercentage > BBOX_SIZE_PERCENT_THRESH) {
-                            try {
-                                viewModel.classify(
-                                    imageProxy =imageProxy,
-                                    context =context,
-                                    scanType =scanType,
-                                    mask =uiStateQa.QaBox[0].mask
-                                )
-                                Log.e("MainActivity", "Mask applied to image")
-                            } catch (e: Exception) {
-                                Log.e(
-                                        "MainActivity",
-                                        "Error applying mask: ${e.message}",
-                                        e
-                                )
-                                viewModel.classify(
-                                    imageProxy =imageProxy,
-                                    context =context,
-                                    scanType =scanType,
-                                    mask = null
-                                )  // Fallback to original image
-                            }
-                        } else {
-                            Log.e(
-                                    "MainActivity",
-                                    "No mask found. Running model on unmasked image"
-                            )
-                            viewModel.classify(
-                                imageProxy =imageProxy,
-                                context =context,
-                                scanType =scanType,
-                                mask = null)
-                        }
-                    } else {
-                        Log.d("MainActivity", "Bounding box percentage is ${bboxPercentage} and is too small to run classification model. Skipping...")
-                    }
-                }
-            }
 
             LaunchedEffect(uiState.errorMessage) {
                 if (uiState.errorMessage != null) {
@@ -112,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
 //            Framing(viewModel, uiState) {
                 MainContent(
-                    onImageProxyAnalyzed = ::onImageProxyAnalyzed,
+                    onImageProxyAnalyzed = { imageProxy, context, scanType -> onImageProxyAnalyzed(imageProxy, context, scanType, viewModel, uiStateQa) },
                     mainViewModel = viewModel
                 )
 //            }

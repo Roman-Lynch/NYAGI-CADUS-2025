@@ -1,6 +1,7 @@
 package com.google.aiedge.examples.imageclassification.navigation
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Colors
@@ -20,7 +21,13 @@ import com.google.aiedge.examples.imageclassification.language.SettingsPageText
 import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
-fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel, color: Color) {
+fun HeaderBar(
+    currentLanguage: Language,
+    mainViewModel: MainViewModel,
+    color: Color,
+    onClickArrow: () -> Unit,
+    onClickSettings: () -> Unit,
+    ) {
     val configuration = LocalConfiguration.current
     when (configuration.orientation) {
         Configuration.ORIENTATION_LANDSCAPE -> {
@@ -57,12 +64,14 @@ fun HeaderBar(currentLanguage: Language, mainViewModel: MainViewModel, color: Co
             ) {
                 HeaderBarButtonVert(
                     filePath = "Icons/BackIcon.png",
-                    onClick = { mainViewModel.popPage() },
+                    // onClick = { mainViewModel.popPage() },
+                    onClick = onClickArrow,
                     semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
                 )
                 HeaderBarButtonVert(
                     filePath = "Icons/GearIcon.png",
-                    onClick = { mainViewModel.pushPage(Pages.Settings) },
+                    // onClick = { mainViewModel.pushPage(Pages.Settings); Log.d("gear", "gear has been pressed") },
+                    onClick = onClickSettings,
                     semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
                 )
             }

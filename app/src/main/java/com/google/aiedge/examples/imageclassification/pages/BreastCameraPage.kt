@@ -3,6 +3,7 @@ package com.google.aiedge.examples.imageclassification.pages
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -26,7 +27,6 @@ import com.google.aiedge.examples.imageclassification.cameraComponents.RotatePho
 import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.Language
 import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
-import okhttp3.internal.http2.Header
 import kotlin.math.absoluteValue
 import android.graphics.ImageFormat
 import android.graphics.Rect
@@ -36,7 +36,10 @@ import android.view.WindowManager
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageInfo
-import java.io.ByteArrayOutputStream
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import com.google.aiedge.examples.imageclassification.navigation.Pages
+import com.google.aiedge.examples.imageclassification.onImageProxyAnalyzed
 import java.nio.ByteBuffer
 
 class BreastCameraActivity : ComponentActivity() {
@@ -47,15 +50,22 @@ class BreastCameraActivity : ComponentActivity() {
         setContent {
             BreastCameraPage(
                 uiState = viewModel.uiState.value,
+                uiStateQa = viewModel.uiStateQa.value,
                 currentLanguage = Language.ENGLISH,
                 modifier = Modifier.fillMaxSize(),
-                onImageAnalyzed = { imageProxy -> Unit },
+                onImageAnalyzed = { imageProxy, context, scanType -> onImageProxyAnalyzed(
+                    imageProxy,
+                    context,
+                    scanType,
+                    viewModel,
+                    viewModel.uiStateQa.value
+                ) },
                 viewModel = viewModel,
             )
         }
     }
 }
-private val BBOX_SIZE_PERCENT_THRESH = 0.25f
+private const val BBOX_SIZE_PERCENT_THRESH = 0.25f
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
@@ -65,7 +75,6 @@ fun BreastCameraPage(
     currentLanguage: Language,
     modifier: Modifier = Modifier,
     onImageAnalyzed: (ImageProxy, Context, String) -> Unit,
-    onImageAnalyzed: (ImageProxy) -> Unit,
     viewModel: MainViewModel
 ) {
 
@@ -215,8 +224,23 @@ fun BreastCameraPage(
             RotatePhonePopup("screen-rotate", currentLanguage, modifier = Modifier.align(Alignment.Center))
         }
 
+//        val context = LocalContext.current
+//        LaunchedEffect(Unit) {
+//            val intent = Intent(context, com.google.aiedge.examples.imageclassification.pages.BreastCameraActivity::class.java)
+//            context.startActivity(intent)
+//        }
+
+        val onClickArrow = {
+            val intent = Intent(context, com.google.aiedge.examples.imageclassification.MainActivity::class.java)
+            context.startActivity(intent)
+        }
+        val onClickSettings = {
+            viewModel.pushPage(Pages.Settings)
+        }
+
         CameraPermissionsAlert(uiState, currentLanguage)
-        HeaderBar(currentLanguage, viewModel, Color.DarkGray.copy(alpha = 0.75f))
+        HeaderBar(currentLanguage, viewModel, Color.DarkGray.copy(alpha = 0.75f), onClickArrow, onClickSettings)
+        Log.d("breast123", viewModel.getCurrentPage().toString())
     }
 
     fun applyBitmapToImageProxy(bitmap: Bitmap, imageProxy: ImageProxy): ImageProxy {

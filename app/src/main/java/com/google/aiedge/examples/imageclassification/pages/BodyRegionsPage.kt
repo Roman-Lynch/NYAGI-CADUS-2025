@@ -2,6 +2,7 @@ package com.google.aiedge.examples.imageclassification.pages
 
 import android.content.res.Configuration
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
@@ -24,7 +25,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
 import com.google.aiedge.examples.imageclassification.view.Theme
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
@@ -69,15 +69,7 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel, context: Con
 //        modifier = Modifier
 //            .size(300.dp)
 //    )
-    Box(
-        Modifier
-            .height(300.dp)
-            .width(300.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(Theme.Purple)
-            .paint(painter, contentScale = ContentScale.FillBounds)
-            .border(3.dp, Theme.Black, shape = RoundedCornerShape(10.dp)),
-    ) {
+
     // in dp
     val buttonSize = 180
     val textboxHeight = 50
@@ -85,17 +77,20 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel, context: Con
     // converts option name to lower case to retrieve ID
     val stringID = optionName.replaceFirstChar { it.lowercase() }
 
-    Box(Modifier
-        .height(buttonSize.dp)
-        .width(buttonSize.dp)
-        .clip(RoundedCornerShape(10.dp))
-        .background(Theme.Purple)
-        .paint(painter, contentScale = ContentScale.FillBounds)
-        .border(3.dp, Theme.Grey, shape = RoundedCornerShape(10.dp)))
+    Box(
+        Modifier
+            .height(buttonSize.dp)
+            .width(buttonSize.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Theme.Purple)
+            .paint(painter, contentScale = ContentScale.FillBounds)
+            .border(3.dp, Theme.Grey, shape = RoundedCornerShape(10.dp))
+    )
     {
         CameraButton(onClick = { mainViewModel.pushPage(Pages.Scan) })
-        Box(Modifier
-            .offset(x=0.dp, y=(buttonSize-textboxHeight).dp) // sits this at the bottom of the box
+        Box(
+            Modifier
+                .offset(x = 0.dp, y = (buttonSize - textboxHeight).dp) // sits this at the bottom of the box
         ) {
             Box(
                 Modifier
@@ -104,14 +99,17 @@ fun SelectorOption(optionName:String, mainViewModel: MainViewModel, context: Con
                     .background(Theme.White)
                     .border(3.dp, Theme.Grey, shape = RoundedCornerShape(10.dp))
 
-            ){
-                Text(BodyPartsPageText.getBodyPartText(context, currentLanguage, stringID),
+            ) {
+                Text(
+                    BodyPartsPageText.getBodyPartText(context, currentLanguage, stringID),
                     modifier = Modifier.align(Alignment.Center),
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             }
         }
     }
 }
+
 
 //@Composable
 //fun OptionsGrid(){
@@ -130,5 +128,10 @@ fun BodyRegionsPage(currentLanguage: Language, modifier: Modifier, mainViewModel
         val context = LocalContext.current
         TextHeader(BodyPartsPageText.getBodyPartSelectorText(context, currentLanguage))
         SelectorOption("Breast", mainViewModel, context, currentLanguage)
+        if (mainViewModel.isStackEmpty()) {
+            Log.d("breastCameraStack", "empty")
+        } else {
+            Log.d("breastCameraStack", "not empty")
+        }
     }
 }

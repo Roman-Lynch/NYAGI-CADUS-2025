@@ -29,7 +29,7 @@ import com.google.aiedge.examples.imageclassification.language.Language
 fun RotatePhonePopup(
     optionName: String,
     currentLanguage: Language,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
