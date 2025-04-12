@@ -28,11 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.UiState
 import com.google.aiedge.examples.imageclassification.cameraComponents.CameraPreview
-import com.google.aiedge.examples.imageclassification.navigation.HeaderBar
-
 
 @Composable
 fun CameraScreen(

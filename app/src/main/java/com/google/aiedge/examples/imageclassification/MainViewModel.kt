@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageProxy
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
@@ -35,14 +34,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val imageClassificationHelper: ImageClassificationHelper,
-                    private val context: Context) :
+class MainViewModel(private val imageClassificationHelper: ImageClassificationHelper) :
     ViewModel() {
     companion object {
         fun getFactory(context: Context) = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
                 val imageClassificationHelper = ImageClassificationHelper(context)
-                return MainViewModel(imageClassificationHelper, context) as T
+                return MainViewModel(imageClassificationHelper) as T
             }
         }
     }
@@ -121,16 +119,7 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiStateQa())
 
     init {
-        val activityName = context::class.java.simpleName
-
-        when (activityName) {
-            "Application" -> {
-                _navigationStack.value = NavigationStack(Pages.BodyRegions)
-            }
-            "BreastCameraActivity" -> {
-                _navigationStack.value = NavigationStack(Pages.Scan)
-            }
-        }
+        _navigationStack.value = NavigationStack(Pages.BodyRegions)
     }
 
     /** Start classify an image.
