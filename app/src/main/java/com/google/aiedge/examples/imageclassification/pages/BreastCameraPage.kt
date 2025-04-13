@@ -38,6 +38,7 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageInfo
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import com.google.aiedge.examples.imageclassification.language.LanguageSettingsGateway
 import com.google.aiedge.examples.imageclassification.navigation.Pages
 import com.google.aiedge.examples.imageclassification.onImageProxyAnalyzed
 import java.nio.ByteBuffer
@@ -51,7 +52,7 @@ class BreastCameraActivity : ComponentActivity() {
             BreastCameraPage(
                 uiState = viewModel.uiState.value,
                 uiStateQa = viewModel.uiStateQa.value,
-                currentLanguage = Language.ENGLISH,
+                currentLanguage = LanguageSettingsGateway(LocalContext.current).getSavedLanguage(),
                 modifier = Modifier.fillMaxSize(),
                 onImageAnalyzed = { imageProxy, context, scanType -> onImageProxyAnalyzed(
                     imageProxy,
