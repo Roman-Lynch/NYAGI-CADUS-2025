@@ -46,7 +46,7 @@ fun DevelopmentScreen(
     //HeaderBar(currentLanguage, mainViewModel)
     val onClickArrow = { mainViewModel.popPage() }
     val onClickSettings = { mainViewModel.pushPage(Pages.Settings) }
-    HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
+
 
     val defaultModifier = Modifier.padding(horizontal = Theme.StandardPageMargin)
 
@@ -54,26 +54,24 @@ fun DevelopmentScreen(
 
     if (rerenderCounter >= 0) when (mainViewModel.getCurrentPage()) {
         Pages.BodyRegions -> {
+            HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
             BodyRegionsPage(currentLanguage, defaultModifier, mainViewModel)
         }
         Pages.ScanType -> {
 
         }
         Pages.Scan -> {
-//            BreastCameraPage(
-//                uiState = uiState,
-//                uiStateQa = uiStateQa,
-//                currentLanguage = currentLanguage,
-//                modifier = Modifier.fillMaxSize(),
-//                onImageAnalyzed = onImageProxyAnalyzed
-//            )
-            val context = LocalContext.current
-            LaunchedEffect(Unit) {
-                val intent = Intent(context, com.google.aiedge.examples.imageclassification.pages.BreastCameraActivity::class.java)
-                context.startActivity(intent)
-            }
+            BreastCameraPage(
+                uiState = uiState,
+                uiStateQa = uiStateQa,
+                currentLanguage = currentLanguage,
+                modifier = Modifier.fillMaxSize(),
+                onImageAnalyzed = onImageProxyAnalyzed,
+                viewModel = mainViewModel,
+            )
         }
         Pages.Settings -> {
+            HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
             SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
         Pages.Gallery -> {

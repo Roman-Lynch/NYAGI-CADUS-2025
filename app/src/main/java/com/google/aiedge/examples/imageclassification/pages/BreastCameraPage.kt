@@ -232,8 +232,7 @@ fun BreastCameraPage(
 //        }
 
         val onClickArrow = {
-            val intent = Intent(context, com.google.aiedge.examples.imageclassification.MainActivity::class.java)
-            context.startActivity(intent)
+            viewModel.popPage()
         }
         val onClickSettings = {
             viewModel.pushPage(Pages.Settings)
