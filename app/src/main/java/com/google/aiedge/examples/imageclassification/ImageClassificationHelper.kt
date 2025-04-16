@@ -40,6 +40,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.Arrays
 
+private val MIN_CONF_THRESH = 0.95
+
 class ImageClassificationHelper(
     private val context: Context,
     private var options: Options = Options(),
@@ -310,8 +312,11 @@ class ImageClassificationHelper(
                     galleryImages.addImage(imageMetadata, origMaskedBitmap)
                 }
 
+                // ONLY save image to galley if the maxConfidence is above the MIN_CONF_THRESH
+                val maxConfidence = if (categories.isNotEmpty()) categories[0].score.toDouble() else 0.0
+
                 val shouldSaveToGallery = true
-                if (shouldSaveToGallery) saveImageToGallery()
+                if (shouldSaveToGallery && maxConfidence >= MIN_CONF_THRESH) saveImageToGallery()
 
                 if (isActive) {
                     _classification.emit(ClassificationResult(categories, inferenceTime))
