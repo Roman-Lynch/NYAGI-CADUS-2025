@@ -1,5 +1,6 @@
 package com.google.aiedge.examples.imageclassification.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +12,7 @@ import androidx.compose.ui.semantics.semantics
 import coil.compose.AsyncImage
 import com.google.aiedge.examples.imageclassification.language.HeaderBarText
 import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
 fun HeaderBarButtonVert(
@@ -46,7 +48,6 @@ fun HeaderBarButtonHor(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1.0f)
-            .clip(CircleShape)
             .clickable(onClick = onClick)
             .semantics { contentDescription = semanticsLabel },
     ) {

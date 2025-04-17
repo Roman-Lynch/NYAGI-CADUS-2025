@@ -30,6 +30,7 @@ fun HeaderBar(
     ) {
     val configuration = LocalConfiguration.current
     when (configuration.orientation) {
+        // DISPLAYS IN HORIZONTAL MODE
         Configuration.ORIENTATION_LANDSCAPE -> {
             Column (
                 modifier = Modifier
@@ -45,14 +46,23 @@ fun HeaderBar(
                     onClick = onClickArrow,
                     semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
                 )
-                HeaderBarButtonHor(
-                    filePath = "Icons/GearIcon.png",
-                    onClick = onClickSettings,
-                    semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
-                )
+                // push gallery and settings icons to bottom
+                Column(){
+                    HeaderBarButtonHor(
+                        filePath = "Icons/GalleryIcon.png",
+                        onClick = {mainViewModel.pushPage(Pages.Gallery)},
+                        semanticsLabel = GalleryText.getGalleryText(LocalContext.current, currentLanguage)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    HeaderBarButtonHor(
+                        filePath = "Icons/GearIcon.png",
+                        onClick = { mainViewModel.pushPage(Pages.Settings) },
+                        semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage))
+                }
             }
         }
         else -> {
+            // DISPLAYS IN VERTICAL MODE
             Row(
                 modifier = Modifier
                     .background(color)
@@ -68,12 +78,21 @@ fun HeaderBar(
                     onClick = onClickArrow,
                     semanticsLabel = HeaderBarText.getGoBack(LocalContext.current, currentLanguage)
                 )
-                HeaderBarButtonVert(
-                    filePath = "Icons/GearIcon.png",
-                    // onClick = { mainViewModel.pushPage(Pages.Settings); Log.d("gear", "gear has been pressed") },
-                    onClick = onClickSettings,
-                    semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
-                )
+                // pushes gallery and settings icons to side
+                Row(){
+                    HeaderBarButtonVert(
+                        filePath = "Icons/GalleryIcon.png",
+                        onClick = {mainViewModel.pushPage(Pages.Gallery)},
+                        semanticsLabel = GalleryText.getGalleryText(LocalContext.current, currentLanguage)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    HeaderBarButtonVert(
+                        filePath = "Icons/GearIcon.png",
+                        // onClick = { mainViewModel.pushPage(Pages.Settings); Log.d("gear", "gear has been pressed") },
+                        onClick = onClickSettings,
+                        semanticsLabel = SettingsPageText.getSettings(LocalContext.current, currentLanguage)
+                    )
+                }
             }
 
         }
