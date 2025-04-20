@@ -1,4 +1,6 @@
 package com.google.aiedge.examples.imageclassification.pages
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,9 +9,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
@@ -27,16 +37,21 @@ import com.google.aiedge.examples.imageclassification.view.ContentDivider
 import com.google.aiedge.examples.imageclassification.view.Theme
 
 @Composable
+fun CategoryName(name:String, fontSize:Int){
+    Text(name, fontWeight = FontWeight.Bold, fontSize = fontSize.sp)
+}
+
+@Composable
 fun TextCategory(categoryName:String, value:String){
+    val fontSize = 20
     Column(){
         Row (Modifier
             .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
-            Text(categoryName, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text(value, fontSize = 20.sp)
+            CategoryName(categoryName, fontSize)
+            Text(value, fontSize = fontSize.sp)
         }
-        Spacer(Modifier.height(5.dp))
     }
 }
 
@@ -68,7 +83,40 @@ fun PageImage(filepath:String){
 
 }
 
+@Preview
+@Composable
+fun LabelInput(){
+    var input by remember{ mutableStateOf("")}
+    Row(Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CategoryName("Label", 20)
+        Spacer(Modifier.width(50.dp))
+        Box(
+            Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Theme.Grey)
+                .border(3.dp, Theme.Grey, shape = RoundedCornerShape(10.dp))
+        ) {
+            TextField(
+                value = input,
+                onValueChange = { input = it },
+                label = { Text("Set label...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Theme.Grey,
+                    focusedIndicatorColor = Theme.Grey,
+                    unfocusedIndicatorColor = Theme.Grey
+                )
+            )
+        }
+    }
+}
+
 // adjust these parameters as fit
+// add functionality to label changer
 @Composable
 fun ImagePage(modifier: Modifier){
     // mockup parameters for previewing purposes
@@ -83,8 +131,13 @@ fun ImagePage(modifier: Modifier){
         ContentDivider(Theme.Grey)
         Spacer(Modifier.height(25.dp))
         TextCategory("Date", date)
+        Spacer(Modifier.height(20.dp))
         TextCategory("Scan Type", scanType)
+        Spacer(Modifier.height(20.dp))
         TextCategory("Confidence", confidence)
+        Spacer(Modifier.height(20.dp))
         TextCategory("Scan ID", scanID)
+        Spacer(Modifier.height(10.dp))
+        LabelInput()
     }
 }

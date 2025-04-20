@@ -20,6 +20,7 @@ import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
 import com.google.aiedge.examples.imageclassification.pages.GalleryPage
+import com.google.aiedge.examples.imageclassification.pages.ImagePage
 
 @Composable
 fun DevelopmentScreen(
@@ -75,7 +76,13 @@ fun DevelopmentScreen(
             SettingsPage(currentLanguage, setLanguage, defaultModifier)
         }
         Pages.Gallery -> {
+            HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
             GalleryPage(currentLanguage, defaultModifier)
+
+//            BELOW: To preview an image page (which can normally only be accessed by clicking on an image in the gallery page,
+//            uncomment the following line.
+//            This shows an example of how an image page might look.
+//            ImagePage(defaultModifier)
         }
     }
 }
