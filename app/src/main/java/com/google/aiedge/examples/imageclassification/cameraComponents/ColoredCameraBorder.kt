@@ -80,7 +80,7 @@ fun ColoredCameraBorder(
 
                     drawIntoCanvas { canvas ->
                         val paint = android.graphics.Paint().apply {
-                            color = android.graphics.Color.WHITE
+                            color = android.graphics.Color.BLACK
                             textSize = 40f
                             isAntiAlias = true
                         }
