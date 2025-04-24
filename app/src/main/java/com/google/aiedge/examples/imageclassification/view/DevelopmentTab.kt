@@ -20,7 +20,7 @@ import com.google.aiedge.examples.imageclassification.pages.BodyRegionsPage
 import com.google.aiedge.examples.imageclassification.pages.SettingsPage
 import com.google.aiedge.examples.imageclassification.pages.BreastCameraPage
 import com.google.aiedge.examples.imageclassification.pages.GalleryPage
-import com.google.aiedge.examples.imageclassification.pages.ImagePage
+import com.google.aiedge.examples.imageclassification.pages.ImageInfoPage
 
 @Composable
 fun DevelopmentScreen(
@@ -84,7 +84,7 @@ fun DevelopmentScreen(
 //            BELOW: To preview an image page (which can normally only be accessed by clicking on an image in the gallery page,
 //            uncomment the following line.
 //            This shows an example of how an image page might look.
-            ImagePage(defaultModifier)
+            ImageInfoPage(mainViewModel)
         }
     }
 }

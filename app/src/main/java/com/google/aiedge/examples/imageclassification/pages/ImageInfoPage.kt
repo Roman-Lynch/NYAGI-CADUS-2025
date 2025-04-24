@@ -1,4 +1,5 @@
 package com.google.aiedge.examples.imageclassification.pages
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -6,11 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -29,12 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
-import com.google.aiedge.examples.imageclassification.view.ContentDivider
+import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.view.Theme
+import java.io.File
 
 @Composable
 fun CategoryName(name:String, fontSize:Int){
@@ -115,29 +118,57 @@ fun LabelInput(){
     }
 }
 
-// adjust these parameters as fit
-// add functionality to label changer
 @Composable
-fun ImagePage(modifier: Modifier){
-    // mockup parameters for previewing purposes
-    val filepath = "mal_test.png"
-    val date = "April 3, 2025, 3:00:29PM"
-    val scanType = "Breast"
-    val confidence = "90%"
-    val scanID = "1234"
+fun ImageInfoPage(mainViewModel: MainViewModel) {
+    val imagePath = mainViewModel.selectedImagePath.value
+    val imageTime = mainViewModel.selectedImageTime.value
+    val imageLabel = mainViewModel.selectedImageLabel.value
 
-    Column(modifier = modifier){
-        PageImage(filepath)
-        ContentDivider(Theme.Grey)
-        Spacer(Modifier.height(25.dp))
-        TextCategory("Date", date)
-        Spacer(Modifier.height(20.dp))
-        TextCategory("Scan Type", scanType)
-        Spacer(Modifier.height(20.dp))
-        TextCategory("Confidence", confidence)
-        Spacer(Modifier.height(20.dp))
-        TextCategory("Scan ID", scanID)
-        Spacer(Modifier.height(10.dp))
-        LabelInput()
+    // If no image is selected, show a default message or go back
+    if (imagePath == null) {
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("No image selected")
+            Button(onClick = { mainViewModel.popPage() }) {
+                Text("Go Back")
+            }
+        }
+        return
+    }
+
+    // Display the selected image info
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        // Display the image
+        val file = File(imagePath)
+        Image(
+            painter = rememberAsyncImagePainter(file),
+            contentDescription = "Selected image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .clip(RoundedCornerShape(10.dp)),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display image information
+        Text("Image Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Time: ${imageTime ?: "Unknown"}")
+        Text("Classification: ${imageLabel ?: "Unclassified"}")
+        Text("File path: $imagePath")
+
+        // Add more details as needed
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Add a back button
+        Button(onClick = { mainViewModel.popPage() }) {
+            Text("Back to Gallery")
+        }
     }
 }

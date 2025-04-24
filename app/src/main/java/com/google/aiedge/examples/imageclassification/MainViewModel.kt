@@ -20,9 +20,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageProxy
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.google.aiedge.examples.imageclassification.data.GalleryImage
 import com.google.aiedge.examples.imageclassification.navigation.NavigationStack
 import com.google.aiedge.examples.imageclassification.navigation.Pages
 import kotlinx.coroutines.Job
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.State
 
 class MainViewModel(private val imageClassificationHelper: ImageClassificationHelper,
                     private val context: Context) :
@@ -215,6 +218,27 @@ class MainViewModel(private val imageClassificationHelper: ImageClassificationHe
         _navigationStack.value?.pop()
         _navigationStack.value = _navigationStack.value
         rerender()
+    }
+
+    private val _selectedImagePath = mutableStateOf<String?>(null)
+    val selectedImagePath: State<String?> = _selectedImagePath
+
+    private val _selectedImageTime = mutableStateOf<String?>(null)
+    val selectedImageTime: State<String?> = _selectedImageTime
+
+    private val _selectedImageLabel = mutableStateOf<String?>(null)
+    val selectedImageLabel: State<String?> = _selectedImageLabel
+
+    fun setSelectedImageInfo(imagePath: String, time: String, label: String) {
+        _selectedImagePath.value = imagePath
+        _selectedImageTime.value = time
+        _selectedImageLabel.value = label
+    }
+
+    fun clearSelectedImageInfo() {
+        _selectedImagePath.value = null
+        _selectedImageTime.value = null
+        _selectedImageLabel.value = null
     }
 
     fun isStackEmpty(): Boolean {

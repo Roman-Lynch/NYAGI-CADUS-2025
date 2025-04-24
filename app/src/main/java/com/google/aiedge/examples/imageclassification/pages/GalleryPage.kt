@@ -140,6 +140,9 @@ fun ImageTile(
                 .clip(RoundedCornerShape(14.dp))
                 .background(Theme.Black.copy(alpha = 0.7f))
                 .clickable {
+                    // Pass the file path and metadata to the view model
+                    val imagePath = file.absolutePath
+                    mainViewModel.setSelectedImageInfo(imagePath, time, imageLabel)
                     mainViewModel.pushPage(Pages.ImageInfoPage)
                 },
             contentAlignment = Alignment.Center
