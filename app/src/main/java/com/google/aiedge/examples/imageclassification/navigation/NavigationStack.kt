@@ -1,7 +1,7 @@
 package com.google.aiedge.examples.imageclassification.navigation
 
 enum class Pages {
-    BodyRegions, ScanType, Scan, Settings, Gallery
+    BodyRegions, ScanType, Scan, Settings, Gallery, ImageInfoPage
 }
 
 class NavigationStack(

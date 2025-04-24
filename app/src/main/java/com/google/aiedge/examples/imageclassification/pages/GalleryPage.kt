@@ -27,14 +27,18 @@ import android.os.Environment
 import android.provider.MediaStore
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size.Companion.ORIGINAL
+import com.google.aiedge.examples.imageclassification.MainViewModel
 import com.google.aiedge.examples.imageclassification.components.SearchBar
 import com.google.aiedge.examples.imageclassification.data.GalleryImage
 import com.google.aiedge.examples.imageclassification.data.GalleryImages
 import com.google.aiedge.examples.imageclassification.language.GalleryText
 import com.google.aiedge.examples.imageclassification.language.Language
+import com.google.aiedge.examples.imageclassification.navigation.Pages
 import com.google.aiedge.examples.imageclassification.view.ContentDivider
 import com.google.aiedge.examples.imageclassification.view.TextHeader
 import com.google.aiedge.examples.imageclassification.view.Theme
@@ -44,10 +48,10 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 // Create a sealed class for category colors
-sealed class CategoryBorderColor(val color: androidx.compose.ui.graphics.Color) {
+sealed class CategoryBorderColor(val color: Color) {
     data object Normal : CategoryBorderColor(Theme.Grey)
-    data object Benign : CategoryBorderColor(androidx.compose.ui.graphics.Color(0xFFFFD700)) // Yellow
-    data object Malignant : CategoryBorderColor(androidx.compose.ui.graphics.Color(0xFFFF4444)) // Red
+    data object Benign : CategoryBorderColor(Color(0xFFFFD700)) // Yellow
+    data object Malignant : CategoryBorderColor(Color(0xFFFF4444)) // Red
 
     companion object {
         fun forLabel(label: String): CategoryBorderColor {
@@ -80,7 +84,8 @@ fun DateHeader(date: String){
 fun ImageTile(
     imageFile: String,
     time: String,
-    imageLabel: String,
+    imageLabel: String = "",
+    mainViewModel: MainViewModel,
     onDelete: () -> Unit = {},
     onDownload: () -> Unit = {}
 ){
@@ -108,13 +113,45 @@ fun ImageTile(
     var textAreaHeight = 40  // Slightly increased from 36
     var textMargin = 10
 
-    Box(Modifier
-        .height(boxHeight.dp)
-        .width(boxWidth.dp)
-        .clip(RoundedCornerShape(10.dp))
-        .paint(painter, contentScale = ContentScale.Crop)
-        .border(2.dp, borderColor, shape = RoundedCornerShape(10.dp)))
-    {
+    Box(
+        Modifier
+            .height(boxHeight.dp)
+            .width(boxWidth.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .border(2.dp, borderColor, shape = RoundedCornerShape(10.dp))
+    ) {
+
+        // Main image container
+        Box(
+            Modifier
+                .height(boxHeight.dp)
+                .width(boxWidth.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .paint(painter, contentScale = ContentScale.Crop)
+                .border(2.dp, borderColor, shape = RoundedCornerShape(10.dp))
+        )
+
+        // Info button in top-left corner
+        Box(
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(6.dp)
+                .size(28.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Theme.Black.copy(alpha = 0.7f))
+                .clickable {
+                    mainViewModel.pushPage(Pages.ImageInfoPage)
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "i",
+                color = Theme.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         // Delete button in top-right corner
         Box(
             Modifier
@@ -155,30 +192,34 @@ fun ImageTile(
         }
 
         // Contains image label text/time
-        Box(Modifier
-            .offset(x=0.dp, y=(boxHeight-textAreaHeight).dp)
-            .height(textAreaHeight.dp)
-            .fillMaxWidth()
-            .background(Theme.White)
-        ){
-            Row(Modifier
+        Box(
+            Modifier
+                .offset(x = 0.dp, y = (boxHeight - textAreaHeight).dp)
                 .height(textAreaHeight.dp)
                 .fillMaxWidth()
-                .padding(vertical = 3.dp),
+                .background(Theme.White)
+        ) {
+            Row(
+                Modifier
+                    .height(textAreaHeight.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Spacer(Modifier.width(textMargin.dp))
                 Row(
                     Modifier.width(boxWidth.dp),
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Text(time, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.width((textMargin*2).dp))
-                    Text(imageLabel,
+                    Spacer(Modifier.width((textMargin * 2).dp))
+                    Text(
+                        imageLabel,
                         Modifier
-                            .width((boxWidth/2).dp)
+                            .width((boxWidth / 2).dp)
                             .padding(vertical = 2.dp),
-                        maxLines = 1)
+                        maxLines = 1
+                    )
                 }
                 Spacer(Modifier.width(textMargin.dp))
             }
@@ -186,11 +227,16 @@ fun ImageTile(
     }
 }
 
-@Preview
 @Composable
-fun ImageTileExample(){
-    ImageTile("mal_test.png", "10:30:32am", "No label")
+fun ImageTileExample(mainViewModel: MainViewModel){
+    ImageTile(
+        "mal_test.png", "10:30:32am",
+        mainViewModel = mainViewModel,
+        onDelete = {},
+        onDownload = {}
+    )
 }
+
 @Preview
 @Composable
 fun DateHeaderPreview(){
@@ -200,6 +246,7 @@ fun DateHeaderPreview(){
 @Composable
 fun RecentImagesGrid(
     images: List<GalleryImage>,
+    mainViewModel: MainViewModel,
     onDeleteImage: (GalleryImage) -> Unit = {},
     onDownloadImage: (GalleryImage) -> Unit = {}
 ) {
@@ -240,6 +287,7 @@ fun RecentImagesGrid(
                                 imageFile = imageFileName,
                                 time = image.timeString,
                                 imageLabel = image.label,
+                                mainViewModel = mainViewModel,
                                 onDelete = { onDeleteImage(image) },
                                 onDownload = { onDownloadImage(image) }
                             )
@@ -292,7 +340,7 @@ fun RecentImagesGrid(
 }
 
 @Composable
-fun GalleryPage(currentLanguage: Language = Language.ENGLISH, modifier: Modifier) {
+fun GalleryPage(currentLanguage: Language = Language.ENGLISH, mainViewModel: MainViewModel, modifier: Modifier) {
     val context = LocalContext.current
     var searchText: String by remember { mutableStateOf("") }
     fun setSearchText(newText: String) { searchText = newText }
@@ -370,6 +418,7 @@ fun GalleryPage(currentLanguage: Language = Language.ENGLISH, modifier: Modifier
         TextHeader(GalleryText.getGalleryText(context, currentLanguage))
         RecentImagesGrid(
             images = sortedImages,
+            mainViewModel = mainViewModel,
             onDeleteImage = { image -> deleteImage(image) },
             onDownloadImage = { image -> downloadImage(image) }
         )

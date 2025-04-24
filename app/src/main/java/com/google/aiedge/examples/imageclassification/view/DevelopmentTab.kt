@@ -77,12 +77,14 @@ fun DevelopmentScreen(
         }
         Pages.Gallery -> {
             HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
-            GalleryPage(currentLanguage, defaultModifier)
-
+            GalleryPage(currentLanguage, mainViewModel, defaultModifier)
+        }
+        Pages.ImageInfoPage -> {
+            HeaderBar(currentLanguage, mainViewModel, Theme.Teal, onClickArrow, onClickSettings)
 //            BELOW: To preview an image page (which can normally only be accessed by clicking on an image in the gallery page,
 //            uncomment the following line.
 //            This shows an example of how an image page might look.
-//            ImagePage(defaultModifier)
+            ImagePage(defaultModifier)
         }
     }
 }
